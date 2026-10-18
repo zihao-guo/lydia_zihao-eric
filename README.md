@@ -81,7 +81,7 @@ The evaluated flow includes input normalisation, model inference, and the determ
 
 The selected flow correctly classifies 1,529 of 1,601 transactions (Wilson 95% interval: 94.37–96.41%). For unseen titles, it gets 62 of 78 correct (69.25–86.96%); that smaller sample leaves substantial uncertainty. Most test transactions have titles already present in training, so the headline Accuracy reflects the current merchant mix. No acceptance thresholds for the two constraints have been set; these results are a baseline for setting them with the product team.
 
-The model improves on merchant lookup by 2.87 percentage points in overall Accuracy and 57.69 points on unseen titles. Structured features improve on the text-only model by 0.81 and 5.13 points respectively. Logistic regression is only four test transactions behind the selected SVC, so the overall difference is small. Of the 72 errors, 16 involve unseen titles, 12 titles with fewer than five training examples, and 44 ambiguous titles with multiple training labels; the latter suggests label inconsistency but has not been verified.
+The model improves on merchant lookup by 2.87 percentage points in overall Accuracy and 57.69 points on unseen titles. Structured features improve on the text-only model by 0.81 and 5.13 points respectively. Logistic regression is only four test transactions behind the selected SVC, so the overall difference is small. Of the 72 errors, 16 involve unseen titles, 12 titles with fewer than five training examples, and 44 titles with at least five training examples where the prediction matches one of the most frequent training labels.
 
 ### Probability calibration — separate assessment
 
@@ -186,6 +186,7 @@ Errors: invalid input gives **422** with a list-shaped `detail`, for example `{"
 ## Assumptions and trade-offs
 
 - **Synthetic data.** Real noise and merchants will differ.
+- **Label quality.** Some errors on familiar titles are assumed to reflect inconsistent labels. This is a working assumption that requires manual label review.
 - **Availability.** `status` and recurrence are assumed known at transaction time.
 - **Recurrence encoding.** Missing `pfm_recurring_frequency` is encoded as `none` (non-recurring).
 - **Holdout inspected.** I viewed the full frame, test period included, during EDA; selection used training-period CV only.

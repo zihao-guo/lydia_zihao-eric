@@ -63,7 +63,7 @@ app = FastAPI(
 
 @lru_cache(maxsize=1)
 def _index_html() -> str:
-    return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
+    return (Path(__file__).with_name("index.html")).read_text(encoding="utf-8")
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)

@@ -91,7 +91,7 @@ def test_evaluate_import_does_not_load_matplotlib():
 
     proc = subprocess.run(
         [sys.executable, "-c", "import sys, src.evaluate; print('matplotlib' in sys.modules)"],
-        cwd=Path(__file__).resolve().parents[2], capture_output=True, text=True,
+        cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True,
     )
     assert proc.returncode == 0, proc.stderr
     assert proc.stdout.strip() == "False"

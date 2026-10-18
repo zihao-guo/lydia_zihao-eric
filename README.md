@@ -6,6 +6,16 @@ Each card transaction gets one of 12 minor categories and one of 8 major categor
 
 Supporting material: [`notebooks/eda.ipynb`](notebooks/eda.ipynb), `models/metrics.json`, `models/model_comparison.csv`, `models/evaluation.json`, `models/model_card.json`.
 
+## Try the live demo
+
+Open the [live frontend](https://zihao-guo.github.io/lydia_zihao-eric/) and wait for the model version to appear at the top.
+
+![Live frontend after selecting the Supermarket example: transaction inputs on the left, predicted category, confidence and top candidates on the right.](src/deploy/demo.png)
+
+1. **Try an example:** click **Supermarket** or another example to fill the form and run a prediction immediately. The screenshot shows `CARREFOUR MARKET` classified as `supermarkets`, with major category `groceries`.
+2. **Enter a transaction:** fill in the title and amount, adjust any optional context, then click **Predict category**. Negative amounts represent debits; positive amounts trigger the refund rule. The result panel shows the category, confidence, and top candidates.
+3. **Predict a CSV:** switch to **CSV input**, upload a file or paste CSV with `title` (or `merchant_name`) and `amount_value` columns, then click **Preview** and **Predict CSV**. Results follow the CSV row order.
+
 ## Repository layout
 
 ```

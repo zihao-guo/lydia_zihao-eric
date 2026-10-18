@@ -71,15 +71,17 @@ API (production concepts) and Communication (concise README with decisions and t
    live in `src/models.py` so that pickled models never reference `__main__`.
 6. **Error buckets** (first match wins): `refund_rule` (true or predicted class is refund),
    `cold_start` (normalised title absent from training), `thin_support` (title has fewer than 5
-   training rows), `title_majority` (prediction equals the title's training-majority label:
-   suspected, not verified, label inconsistency), `other`.
+   training rows), `title_majority` (the prediction is one of the labels tied for the highest training
+   count of that title: suspected, not verified, label inconsistency), `other`.
 7. **Artifacts:** `models/model.joblib` = `{"pipeline": Pipeline, "metadata": dict}`;
    `models/metrics.json`, `models/model_card.json`, `models/model_comparison.csv`;
    `reports/model_comparison.md`, `reports/error_analysis_tables.md`,
    `reports/figures/{confusion_minor,confusion_major,confidence_coverage}.png`.
    Trained artifacts and executed notebook outputs are committed.
 8. **Cold-start estimate:** 5-fold StratifiedGroupKFold grouped by normalised title on the
-   training period, reported next to the stratified CV for every model, never used for selection.
+   training period, pooled out-of-fold predictions with the refund rule applied (served behaviour,
+   like the seen/unseen split), reported next to the stratified CV for every model, never used for
+   selection.
 
 ## Repository layout and commands
 

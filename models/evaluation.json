@@ -1,0 +1,254 @@
+{
+  "model_name": "linear_svc",
+  "model_version": "linear_svc-20261018-151345",
+  "data_md5": "2aae754ae1cbd30138ee647a7c5e9c7a",
+  "split_date": "2026-05-24T11:07:07+00:00",
+  "n_test": 1601,
+  "raw": {
+    "accuracy": 0.9537788881948782,
+    "macro_f1": 0.9350117537828191,
+    "log_loss": 0.24756298615063713,
+    "major_accuracy": 0.9631480324797002,
+    "major_macro_f1": 0.9376383867779319,
+    "n": 1601
+  },
+  "guarded": {
+    "accuracy": 0.9550281074328545,
+    "macro_f1": 0.941297362365875,
+    "log_loss": 0.24605907657495202,
+    "major_accuracy": 0.9643972517176764,
+    "major_macro_f1": 0.9439648489867472,
+    "n": 1601
+  },
+  "intervals": {
+    "raw_accuracy": {
+      "k": 1527,
+      "n": 1601,
+      "estimate": 0.9537788881948782,
+      "low": 0.9423626958280891,
+      "high": 0.9630226082417956
+    },
+    "guarded_accuracy": {
+      "k": 1529,
+      "n": 1601,
+      "estimate": 0.9550281074328545,
+      "low": 0.9437409953423723,
+      "high": 0.964136766550141
+    },
+    "seen_accuracy": {
+      "k": 1467,
+      "n": 1523,
+      "estimate": 0.9632304661851608,
+      "low": 0.9525533614917499,
+      "high": 0.9715765548008111
+    },
+    "unseen_accuracy": {
+      "k": 62,
+      "n": 78,
+      "estimate": 0.7948717948717948,
+      "low": 0.692458195735871,
+      "high": 0.8696031520383659
+    }
+  },
+  "seen_unseen": {
+    "seen_n": 1523,
+    "seen_accuracy": 0.9632304661851608,
+    "unseen_n": 78,
+    "unseen_accuracy": 0.7948717948717948
+  },
+  "per_class": [
+    {
+      "class": "atm",
+      "precision": 0.95,
+      "recall": 1.0,
+      "f1": 0.9743589743589743,
+      "support": 76
+    },
+    {
+      "class": "betting",
+      "precision": 0.9506172839506173,
+      "recall": 0.8850574712643678,
+      "f1": 0.9166666666666666,
+      "support": 87
+    },
+    {
+      "class": "hairdresser",
+      "precision": 1.0,
+      "recall": 0.9230769230769231,
+      "f1": 0.96,
+      "support": 26
+    },
+    {
+      "class": "multimedia",
+      "precision": 0.9585987261146497,
+      "recall": 0.9836601307189542,
+      "f1": 0.9709677419354839,
+      "support": 306
+    },
+    {
+      "class": "others_shopping",
+      "precision": 0.9047619047619048,
+      "recall": 0.6785714285714286,
+      "f1": 0.7755102040816326,
+      "support": 28
+    },
+    {
+      "class": "pharmacies",
+      "precision": 0.9615384615384616,
+      "recall": 0.9615384615384616,
+      "f1": 0.9615384615384616,
+      "support": 26
+    },
+    {
+      "class": "refund",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 27
+    },
+    {
+      "class": "restaurants",
+      "precision": 0.9330708661417323,
+      "recall": 0.9367588932806324,
+      "f1": 0.9349112426035503,
+      "support": 253
+    },
+    {
+      "class": "supermarkets",
+      "precision": 0.9619238476953907,
+      "recall": 0.9795918367346939,
+      "f1": 0.9706774519716885,
+      "support": 490
+    },
+    {
+      "class": "tolls_gas_stations",
+      "precision": 0.9418604651162791,
+      "recall": 0.9759036144578314,
+      "f1": 0.9585798816568047,
+      "support": 83
+    },
+    {
+      "class": "transport_means",
+      "precision": 0.9685534591194969,
+      "recall": 0.9112426035502958,
+      "f1": 0.9390243902439024,
+      "support": 169
+    },
+    {
+      "class": "travel_means",
+      "precision": 0.9333333333333333,
+      "recall": 0.9333333333333333,
+      "f1": 0.9333333333333333,
+      "support": 30
+    }
+  ],
+  "bucket_summary": [
+    {
+      "bucket": "refund_rule",
+      "n": 0,
+      "share": 0.0
+    },
+    {
+      "bucket": "cold_start",
+      "n": 16,
+      "share": 0.2222222222222222
+    },
+    {
+      "bucket": "thin_support",
+      "n": 12,
+      "share": 0.16666666666666666
+    },
+    {
+      "bucket": "title_majority",
+      "n": 44,
+      "share": 0.6111111111111112
+    },
+    {
+      "bucket": "other",
+      "n": 0,
+      "share": 0.0
+    }
+  ],
+  "coverage": [
+    {
+      "threshold": 0.5,
+      "coverage": 0.9868831980012492,
+      "accuracy_on_covered": 0.9626582278481013,
+      "covered_n": 1580,
+      "correct_n": 1521
+    },
+    {
+      "threshold": 0.55,
+      "coverage": 0.9831355402873204,
+      "accuracy_on_covered": 0.963151207115629,
+      "covered_n": 1574,
+      "correct_n": 1516
+    },
+    {
+      "threshold": 0.6,
+      "coverage": 0.9806371018113679,
+      "accuracy_on_covered": 0.9630573248407643,
+      "covered_n": 1570,
+      "correct_n": 1512
+    },
+    {
+      "threshold": 0.65,
+      "coverage": 0.9743910056214866,
+      "accuracy_on_covered": 0.9641025641025641,
+      "covered_n": 1560,
+      "correct_n": 1504
+    },
+    {
+      "threshold": 0.7,
+      "coverage": 0.9631480324797002,
+      "accuracy_on_covered": 0.9656290531776913,
+      "covered_n": 1542,
+      "correct_n": 1489
+    },
+    {
+      "threshold": 0.75,
+      "coverage": 0.9550281074328545,
+      "accuracy_on_covered": 0.9659908436886854,
+      "covered_n": 1529,
+      "correct_n": 1477
+    },
+    {
+      "threshold": 0.8,
+      "coverage": 0.9462835727670206,
+      "accuracy_on_covered": 0.9656765676567657,
+      "covered_n": 1515,
+      "correct_n": 1463
+    },
+    {
+      "threshold": 0.85,
+      "coverage": 0.9319175515302935,
+      "accuracy_on_covered": 0.9658176943699732,
+      "covered_n": 1492,
+      "correct_n": 1441
+    },
+    {
+      "threshold": 0.9,
+      "coverage": 0.8900687070580887,
+      "accuracy_on_covered": 0.9663157894736842,
+      "covered_n": 1425,
+      "correct_n": 1377
+    },
+    {
+      "threshold": 0.95,
+      "coverage": 0.11430356027482823,
+      "accuracy_on_covered": 0.9726775956284153,
+      "covered_n": 183,
+      "correct_n": 178
+    }
+  ],
+  "recommended_threshold": {
+    "threshold": 0.5,
+    "coverage": 0.9868831980012492,
+    "accuracy_on_covered": 0.9626582278481013,
+    "covered_n": 1580,
+    "correct_n": 1521,
+    "abstain_n": 21,
+    "accuracy_low": 0.9521312967702142,
+    "accuracy_high": 0.970940808420103
+  }
+}

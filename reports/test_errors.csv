@@ -1,0 +1,73 @@
+text_norm,title,true,pred,confidence,bucket,train_rows_for_title,train_majority_label,train_top_labels
+le diplomate,LE DIPLOMATE,supermarkets,restaurants,0.9105222773547244,cold_start,0,,
+google phone dialer c,GOOGLE *Phone Dialer C,betting,multimedia,0.9037816036095919,cold_start,0,,
+l espace sante,L'ESPACE SANTE,pharmacies,restaurants,0.8313293073219316,cold_start,0,,
+station bd de l,STATION BD DE L,supermarkets,tolls_gas_stations,0.6735227301571493,cold_start,0,,
+cts da sc,CTS DA SC,transport_means,restaurants,0.6364365394190906,cold_start,0,,
+easyjet dnata in flight c,EASYJET DNATA IN FLIGHT C,travel_means,restaurants,0.5143759193945301,cold_start,0,,
+bene bono,BENE BONO,supermarkets,restaurants,0.48652989347535,cold_start,0,,
+dept de la charente marit,DEPT DE LA CHARENTE-MARIT,tolls_gas_stations,restaurants,0.47896996142512466,cold_start,0,,
+oasa athens,OASA Athens,transport_means,restaurants,0.4741413451544807,cold_start,0,,
+bene bono,BENE BONO,supermarkets,restaurants,0.46251211275155285,cold_start,0,,
+fp lourmel,FP LOURMEL,others_shopping,supermarkets,0.42974362586916426,cold_start,0,,
+adp roissy pab,ADP ROISSY PAB,transport_means,restaurants,0.3890143948891243,cold_start,0,,
+napoleon games,Napoleon Games,betting,multimedia,0.36529265563229235,cold_start,0,,
+mdx lab,MDX Lab,betting,restaurants,0.3479690392434031,cold_start,0,,
+sq noir coffee shop,SQ *NOIR COFFEE SHOP,restaurants,supermarkets,0.33381042431275265,cold_start,0,,
+sdal,SDAL,supermarkets,tolls_gas_stations,0.3173029085305233,cold_start,0,,
+pharmacie de la,PHARMACIE DE LA,supermarkets,pharmacies,0.9450494948406479,thin_support,3,pharmacies,pharmacies
+microsoft subscription,MICROSOFT*SUBSCRIPTION,others_shopping,multimedia,0.9073907239762252,thin_support,3,multimedia,multimedia
+deezerfr deezer,DeezerFR DEEZER,betting,multimedia,0.9045339336109418,thin_support,3,multimedia,multimedia
+gsf p wsprocessing,GSF P-WSProcessing,multimedia,betting,0.9012839960304415,thin_support,1,betting,betting
+sodexo web,SODEXO WEB,supermarkets,restaurants,0.8891222063246543,thin_support,2,restaurants,restaurants
+lw sncf connect,LW*SNCF CONNECT,transport_means,travel_means,0.886668427181667,thin_support,2,travel_means,travel_means
+create,CREATE,hairdresser,restaurants,0.6875764665517305,thin_support,1,hairdresser,hairdresser
+create,CREATE,hairdresser,restaurants,0.6725758475947483,thin_support,1,hairdresser,hairdresser
+flix,FLIX,travel_means,transport_means,0.6367171354051382,thin_support,2,transport_means,transport_means
+la belle epoque,LA BELLE EPOQUE,restaurants,transport_means,0.49131104950468657,thin_support,1,transport_means,transport_means
+la belle epoque,LA BELLE EPOQUE,restaurants,transport_means,0.4882243130568291,thin_support,1,transport_means,transport_means
+grand paris seine ouest,GRAND PARIS SEINE OUEST,transport_means,travel_means,0.3228293936202671,thin_support,1,travel_means,travel_means
+ubr pending uber com,UBR* PENDING.UBER.COM,restaurants,transport_means,0.9580835424178406,title_majority,111,transport_means,transport_means
+mc donald s,MC DONALD'S,transport_means,restaurants,0.9533925414162946,title_majority,143,restaurants,restaurants
+auchan supermar,AUCHAN SUPERMAR,others_shopping,supermarkets,0.9527875406099596,title_majority,69,supermarkets,supermarkets
+mc donald s,MC DONALD S,transport_means,restaurants,0.9517828879171716,title_majority,143,restaurants,restaurants
+auchan supermar,AUCHAN SUPERMAR,restaurants,supermarkets,0.9509169454625646,title_majority,69,supermarkets,supermarkets
+la banque postale,LA BANQUE POSTALE,transport_means,atm,0.9479509284819226,title_majority,91,atm,atm
+carrefour,CARREFOUR,restaurants,supermarkets,0.9472881445243106,title_majority,77,supermarkets,supermarkets
+la banque postale,LA BANQUE POSTALE,transport_means,atm,0.9472144731339619,title_majority,91,atm,atm
+burger king,Burger King,supermarkets,restaurants,0.9458056827130946,title_majority,122,restaurants,restaurants
+carrefour city,CARREFOUR CITY,others_shopping,supermarkets,0.9455773390533447,title_majority,216,supermarkets,supermarkets
+carrefour city,CARREFOUR CITY,restaurants,supermarkets,0.9446268885073495,title_majority,216,supermarkets,supermarkets
+retrait dab,RETRAIT DAB,transport_means,atm,0.9438118524841906,title_majority,82,atm,atm
+betclic,BETCLIC,multimedia,betting,0.9426929925474239,title_majority,92,betting,betting
+google one,Google One,betting,multimedia,0.9413983012990114,title_majority,29,multimedia,multimedia
+winamax fr,WINAMAX FR,multimedia,betting,0.9409896946228758,title_majority,120,betting,betting
+intermarche,INTERMARCHE,restaurants,supermarkets,0.939721849928998,title_majority,266,supermarkets,supermarkets
+apple com bill,APPLE.COM/BILL,betting,multimedia,0.9379360461309888,title_majority,881,multimedia,multimedia
+apple com bill,APPLE.COM/BILL,others_shopping,multimedia,0.9361920165096905,title_majority,881,multimedia,multimedia
+fdj obgf,FDJ OBGF,multimedia,betting,0.9361114744273223,title_majority,49,betting,betting
+apple com bill,APPLE.COM/BILL,betting,multimedia,0.9360463785431051,title_majority,881,multimedia,multimedia
+cash services,CASH SERVICES,transport_means,atm,0.9357416186575485,title_majority,66,atm,atm
+amazon eu sarl,AMAZON EU SARL,multimedia,others_shopping,0.9353972608459372,title_majority,35,others_shopping,others_shopping
+intermarche,INTERMARCHE,restaurants,supermarkets,0.9353354970245865,title_majority,266,supermarkets,supermarkets
+carrefourmarket,CARREFOURMARKET,restaurants,supermarkets,0.9350163692303983,title_majority,72,supermarkets,supermarkets
+franprix,FRANPRIX,restaurants,supermarkets,0.9340232337546336,title_majority,56,supermarkets,supermarkets
+netflix com,NETFLIX.COM,others_shopping,multimedia,0.9326583222933001,title_majority,94,multimedia,multimedia
+carrefourmarket,CARREFOURMARKET,others_shopping,supermarkets,0.9322238695219139,title_majority,72,supermarkets,supermarkets
+apple com bill,APPLE.COM/BILL,betting,multimedia,0.9318121667957763,title_majority,881,multimedia,multimedia
+centre leclerc,CENTRE LECLERC,restaurants,supermarkets,0.931758750528585,title_majority,27,supermarkets,supermarkets
+total,TOTAL,transport_means,tolls_gas_stations,0.9316319866851783,title_majority,101,tolls_gas_stations,tolls_gas_stations
+monoprix,MONOPRIX,restaurants,supermarkets,0.9312348807177105,title_majority,184,supermarkets,supermarkets
+netflix com,NETFLIX.COM,others_shopping,multimedia,0.9310566128516249,title_majority,94,multimedia,multimedia
+cocci market,COCCI MARKET,restaurants,supermarkets,0.930976858319735,title_majority,13,supermarkets,supermarkets
+franprix,FRANPRIX,others_shopping,supermarkets,0.9298535850484595,title_majority,56,supermarkets,supermarkets
+mcdonalds,MCDONALDS,transport_means,restaurants,0.9294535785451479,title_majority,31,restaurants,restaurants
+apple com bill,APPLE.COM/BILL,betting,multimedia,0.9279519921502096,title_majority,881,multimedia,multimedia
+canal plus fr,CANAL PLUS FR,betting,multimedia,0.9269766876060226,title_majority,13,multimedia,multimedia
+temu com,TEMU.COM,supermarkets,others_shopping,0.9221309209248688,title_majority,24,others_shopping,others_shopping
+spar,SPAR,restaurants,supermarkets,0.9147702356523716,title_majority,15,supermarkets,supermarkets
+sanef,SANEF,supermarkets,tolls_gas_stations,0.914399659817092,title_majority,10,tolls_gas_stations,tolls_gas_stations
+blablacar carpool,BlaBlaCar Carpool,restaurants,transport_means,0.9116960094391539,title_majority,8,transport_means,transport_means
+aprr nfc,APRR NFC,transport_means,tolls_gas_stations,0.9046764820509784,title_majority,11,tolls_gas_stations,tolls_gas_stations
+sa coop atlantique,SA   COOP ATLANTIQUE 3,tolls_gas_stations,supermarkets,0.8828500833613669,title_majority,8,supermarkets,supermarkets
+g,G7,transport_means,supermarkets,0.7171090893008815,title_majority,5,supermarkets,supermarkets

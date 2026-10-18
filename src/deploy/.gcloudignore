@@ -13,3 +13,4 @@
 !models/
 !models/model.joblib
 !models/model_card.json
+**/__pycache__/**

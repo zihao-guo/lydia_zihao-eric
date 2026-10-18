@@ -1,3 +1,5 @@
+**Live demo:** [Transaction labeling](https://zihao-guo.github.io/lydia_zihao-eric/) · [API docs](https://lydia-transaction-api-504999617745.europe-west1.run.app/docs)
+
 # Transaction labeling — card-transaction category classifier
 
 Each card transaction gets one of 12 minor categories and one of 8 major categories, using only fields available at payment time. The model is a sigmoid-calibrated linear SVM on character and word n-grams of the normalised title plus categorical and numeric features; the major category comes from a fixed taxonomy, a deterministic rule handles refunds, and a FastAPI service serves it. On the held-out final 20 % of the timeline (n = 1,601) the guarded accuracy (refund rule applied) is 0.955 (Wilson 95 % interval 0.944 to 0.964), macro-F1 0.941, major accuracy 0.964. That is next-period accuracy (95.1 % of test rows have a title seen in training); on the 78 unseen titles it is 0.795 (0.692 to 0.870).
@@ -25,6 +27,7 @@ Supporting material: [`notebooks/eda.ipynb`](notebooks/eda.ipynb), `models/metri
 │   │   ├── main.py              FastAPI app and routes
 │   │   ├── schemas.py           request and response models
 │   │   └── index.html           web form served at /
+│   ├── deploy/                  containers, hosting scripts and deployment guide
 │   └── tests/                   pytest suite
 └── models/
     ├── model.joblib             trained pipeline plus metadata

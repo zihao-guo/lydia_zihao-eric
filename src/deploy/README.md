@@ -9,7 +9,7 @@
 
 ## Frontend updates
 
-The `Deploy frontend to GitHub Pages` workflow runs on changes to the frontend, builder, or workflow on `main`. It can also be run manually. The repository's `API_BASE_URL` Actions variable supplies the Cloud Run HTTPS origin. `scripts/build_pages.py` copies the frontend to `dist/index.html`, inserts the API origin, and adds `.nojekyll`. Only those static files are uploaded to Pages.
+The `Deploy frontend to GitHub Pages` workflow runs on changes to the frontend, builder, or workflow on `main`. It can also be run manually. The repository's `API_BASE_URL` Actions variable supplies the Cloud Run HTTPS origin. `src/deploy/build_pages.py` copies the frontend to `dist/index.html`, inserts the API origin, and adds `.nojekyll`. Only those static files are uploaded to Pages.
 
 The FastAPI-served frontend keeps its empty API origin and works locally at `/`. Both single and CSV batch predictions, readiness checks, and the API documentation link use the configured origin in the Pages build.
 
@@ -18,10 +18,12 @@ The FastAPI-served frontend keeps its empty API origin and works locally at `/`.
 With Google Cloud CLI authenticated:
 
 ```bash
-bash scripts/deploy_backend.sh
+bash src/deploy/deploy.sh
 ```
 
-The build uses the dedicated `lydia-build@lydia-512016.iam.gserviceaccount.com` account with `roles/run.builder`, approved during setup. `.gcloudignore` uploads only runtime source, dependencies, and the fitted model; training data and notebooks are excluded. Runtime dependencies match the fitted artifact's versions.
+The build uses the dedicated `lydia-build@lydia-512016.iam.gserviceaccount.com` account with `roles/run.builder`, approved during setup. `deploy.sh` prepares a temporary context containing only runtime source, dependencies, and the fitted model, and copies the Docker and Cloud ignore files there; training data and notebooks are excluded. Runtime dependencies match the fitted artifact's versions.
+
+The Google-managed model service agent `service-504999617745@gcp-sa-aiplatform.iam.gserviceaccount.com` has `roles/artifactregistry.reader` on the `cloud-run-source-deploy` repository, explicitly approved during setup, so the model registry can read the serving image.
 
 Cloud Run exposes port 8000, uses 1 CPU and 512 MiB memory, scales to zero when idle, and has a maximum of 2 instances. Public access enables predictions from GitHub Pages. CORS permits `https://zihao-guo.github.io`. No Google Cloud credentials or API keys are included in the frontend.
 
@@ -44,3 +46,5 @@ curl "$API_BASE_URL/v1/predict" \
 ```
 
 Readiness must return `model_loaded: true`; predictions must include the category, confidence, and model version. The browser's health indicator should show that same version.
+
+Deployment verification on 2026-10-18: all 207 repository tests passed; GitHub Pages workflow `39144655670` succeeded. Public health, single/batch prediction, refund behavior, and CORS checks passed. A Chromium browser opened the public Pages URL and successfully ran the Supermarket example plus a two-row CSV (Netflix and refund), with no JavaScript errors.

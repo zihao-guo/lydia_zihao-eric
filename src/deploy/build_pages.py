@@ -12,7 +12,7 @@ def build(api_url: str, output: Path) -> None:
     if (url.scheme != "https" or not url.hostname or url.username or url.password
             or url.query or url.fragment or url.path not in ("", "/")):
         raise ValueError("API URL must be an HTTPS origin without credentials, path, query, or fragment")
-    source = Path(__file__).resolve().parents[1] / "src/api/index.html"
+    source = Path(__file__).resolve().parents[1] / "api/index.html"
     html = source.read_text(encoding="utf-8")
     marker = '<meta name="api-base" content="">'
     if html.count(marker) != 1:

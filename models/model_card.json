@@ -1,0 +1,128 @@
+{
+  "model_name": "linear_svc",
+  "model_version": "linear_svc-20261018-151345",
+  "trained_at": "2026-10-18T15:13:45.620126+00:00",
+  "task": "Predict minor_category of a card transaction; major_category is derived from a fixed taxonomy.",
+  "classes": [
+    "atm",
+    "betting",
+    "hairdresser",
+    "multimedia",
+    "others_shopping",
+    "pharmacies",
+    "refund",
+    "restaurants",
+    "supermarkets",
+    "tolls_gas_stations",
+    "transport_means",
+    "travel_means"
+  ],
+  "intended_use": "Auto-labelling of card transactions; use the returned confidence to route low-confidence cases to review. Refunds are set by a deterministic rule (status refunded or positive amount) applied after the model.",
+  "training_data": {
+    "source": "transactions.csv",
+    "rows_after_dedup": 8001,
+    "rows_deduplicated": 120,
+    "train_rows": 6400,
+    "test_rows": 1601,
+    "split": "temporal, first 80% by created_at; test starts 2026-05-24T11:07:07+00:00"
+  },
+  "model_description": "TF-IDF + categorical + numeric features, sigmoid-calibrated LinearSVC.",
+  "model_family": "linear",
+  "feature_blocks": [
+    "char",
+    "word",
+    "cat",
+    "num"
+  ],
+  "input_columns": [
+    "text_norm",
+    "digitalization_type",
+    "merchant_pan_entry_method",
+    "pfm_recurring_frequency",
+    "status",
+    "amount_abs_log",
+    "amount_sign",
+    "fees_log",
+    "has_fees",
+    "hour",
+    "dow",
+    "is_weekend",
+    "is_round_amount"
+  ],
+  "text_feature": "text_norm (normalised title, merchant_name fallback)",
+  "configured_columns": {
+    "text": "title",
+    "categorical": [
+      "digitalization_type",
+      "merchant_pan_entry_method",
+      "pfm_recurring_frequency",
+      "status"
+    ],
+    "numeric": [
+      "amount_abs_log",
+      "amount_sign",
+      "fees_log",
+      "has_fees",
+      "hour",
+      "dow",
+      "is_weekend",
+      "is_round_amount"
+    ]
+  },
+  "excluded": "card_name and identifier columns are accepted by the API but not used.",
+  "selection": {
+    "criterion": "CV accuracy (desc), then CV macro-F1 (desc), then CV log-loss (asc), then model name (asc); a candidate with any non-finite CV score ranks after every fully valid candidate; scores are rounded to 12 decimals before comparison so float noise never decides a ranking; 5-fold stratified CV on the training period",
+    "best_params": {
+      "clf__estimator__C": 0.5
+    }
+  },
+  "metrics": {
+    "cv": {
+      "accuracy": 0.9403124999999999,
+      "macro_f1": 0.9247779202559906,
+      "log_loss": 0.3077567169329116
+    },
+    "coldstart": {
+      "accuracy": 0.79890625,
+      "macro_f1": 0.7291090734014626,
+      "accuracy_fold_std": 0.08374735775780479,
+      "n_splits": 5
+    },
+    "test": {
+      "accuracy": 0.9537788881948782,
+      "macro_f1": 0.9350117537828191,
+      "log_loss": 0.24756298615063713,
+      "major_accuracy": 0.9631480324797002,
+      "major_macro_f1": 0.9376383867779319,
+      "n": 1601
+    },
+    "test_guarded": {
+      "accuracy": 0.9550281074328545,
+      "macro_f1": 0.941297362365875,
+      "log_loss": 0.24605907657495202,
+      "major_accuracy": 0.9643972517176764,
+      "major_macro_f1": 0.9439648489867472,
+      "n": 1601
+    },
+    "seen_unseen": {
+      "seen_n": 1523,
+      "seen_accuracy": 0.9632304661851608,
+      "unseen_n": 78,
+      "unseen_accuracy": 0.7948717948717948
+    }
+  },
+  "diagnostics": {
+    "title_agreement": {
+      "train": 0.94640625,
+      "train_refund_adjusted": 0.96015625
+    }
+  },
+  "limitations": [
+    "Labels are noisy per merchant (same merchant carries several labels), so errors on ambiguous merchants are expected.",
+    "Merchants unseen in training are much less accurate; see seen_unseen metrics.",
+    "The headline figure is guarded next-period accuracy (refund rule applied) under the current merchant mix. Cold-start accuracy is also guarded and is measured by title-grouped CV on the training period (reported in metrics.json).",
+    "Trained on a single three-month window of EUR card transactions; drift is not monitored.",
+    "Class imbalance: small classes (e.g. hairdresser) have fewer examples; see per-class report."
+  ],
+  "package_version": "0.1.0"
+}

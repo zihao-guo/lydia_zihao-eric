@@ -2,7 +2,7 @@
 
 # Transaction labeling — card-transaction category classifier
 
-Each card transaction gets one of 12 minor categories and one of 8 major categories, using only fields available at payment time. The model is a sigmoid-calibrated linear SVM on character and word n-grams of the normalised title plus categorical and numeric features; the major category comes from a fixed taxonomy, a deterministic rule handles refunds, and a FastAPI service serves it. On the held-out final 20 % of the timeline (n = 1,601) the guarded accuracy (refund rule applied) is 0.955 (Wilson 95 % interval 0.944 to 0.964), macro-F1 0.941, major accuracy 0.964. That is next-period accuracy (95.1 % of test rows have a title seen in training); on the 78 unseen titles it is 0.795 (0.692 to 0.870).
+Each card transaction gets one of 12 minor categories and one of 8 major categories, using only fields available at payment time. The model is a sigmoid-calibrated linear SVM on character and word n-grams of the normalised title plus categorical and numeric features; the major category comes from a fixed taxonomy, a deterministic rule handles refunds, and a FastAPI service serves it. Evaluation uses the complete prediction flow, with Accuracy as the primary business metric, Macro-F1 and unseen-title accuracy as key constraints, and probability calibration assessed separately below.
 
 Supporting material: [`notebooks/eda.ipynb`](notebooks/eda.ipynb), `models/metrics.json`, `models/model_comparison.csv`, `models/evaluation.json`, `models/model_card.json`.
 
@@ -45,7 +45,7 @@ Supporting material: [`notebooks/eda.ipynb`](notebooks/eda.ipynb), `models/metri
 - **Features.** Kept: entry method, digitalization, recurrence, status, `log1p(|amount|)`, sign, fees, time and round-amount flags. Dropped: `card_name` (mutual information 0.0286 vs a 0.0261 permutation baseline), identifiers, constants.
 - **Deduplication before splitting:** 120 exact repeats removed, 8,001 rows remain.
 - **Validation.** Temporal split: the first 80 % by `created_at` trains (6,400 rows), the last 1,601 test, from 2026-05-24. Selection uses 5-fold stratified CV on the training period; a 5-fold StratifiedGroupKFold by normalised title gives the cold-start view.
-- **Selection rule:** CV accuracy, then CV macro-F1, then CV log-loss, then model name.
+- **Selection.** Model selection uses training-period cross-validation only; the held-out test period is used for reporting. Exact ranking rules and training diagnostics are in `models/metrics.json`.
 - **Model zoo.** Majority class, title lookup, logistic regression, calibrated linear SVC, text-only SVC ablation.
 - **One artifact, shared preprocessing.** The artifact holds the whole pipeline and every stage imports `src/preprocessing.py`, so serving cannot drift from training.
 
@@ -53,47 +53,39 @@ The exploratory analysis behind these choices (nulls, duplicates, class balance,
 
 ## Result analysis
 
-| model | cv_accuracy | coldstart_accuracy | test_accuracy (raw) | test_accuracy_guarded | test_macro_f1_guarded | seen_accuracy | unseen_accuracy |
-|---|---|---|---|---|---|---|---|
-| majority | 0.2892 | 0.3038 | 0.3061 | 0.3229 | 0.1229 | 0.3283 | 0.2179 |
-| merchant_lookup | 0.8884 | 0.3038 | 0.9094 | 0.9263 | 0.8961 | 0.9626 | 0.2179 |
-| linear_svc_text (ablation) | 0.9189 | 0.7284 | 0.9300 | 0.9469 | 0.9320 | 0.9573 | 0.7436 |
-| logreg | 0.9364 | 0.7912 | 0.9525 | 0.9525 | 0.9396 | 0.9613 | 0.7821 |
-| **linear_svc (selected)** | 0.9403 | 0.7989 | 0.9538 | 0.9550 | 0.9413 | 0.9632 | 0.7949 |
+Lydia's PFM task automatically classifies every transaction. If all misclassifications have similar business costs, the proportion of transactions classified correctly is the most direct product metric. **Accuracy of the complete prediction flow is therefore the primary business metric.**
 
-- `cv_accuracy`: 5-fold stratified CV on the training period, model alone; the selection criterion.
-- `coldstart_accuracy`: title-grouped CV on the training period (no normalised title shared between folds), refund rule applied.
-- `test_accuracy (raw)`: model alone on the held-out last 20 % of the timeline (1,601 rows).
-- `test_accuracy_guarded`: same rows with the refund rule applied after prediction; the served behaviour and headline.
-- `test_macro_f1_guarded`: unweighted mean F1 over the 12 classes, guarded.
-- `seen_accuracy` / `unseen_accuracy`: guarded accuracy on test rows whose normalised title does / does not appear in the training period (1,523 / 78 rows).
+The evaluated flow includes input normalisation, model inference, and the deterministic refund rule, producing the final minor category returned by the API. Major categories are derived from the fixed taxonomy. All classification results below use this same complete flow on the held-out final 20 % of the timeline (1,601 transactions).
 
-The majority class is 29.3 % of rows.
+- **Accuracy — primary:** correctly classified transactions divided by all test transactions.
+- **Macro-F1 — class-balance constraint:** the unweighted mean F1 over the 12 minor categories; it checks whether overall Accuracy hides weak performance on less frequent categories.
+- **Unseen-title accuracy — generalisation constraint:** Accuracy on the 78 test transactions whose normalised title never appeared in training; it checks whether performance extends beyond familiar titles. This measures unseen title strings, not unseen merchant entities.
 
-- **Model vs title lookup.** Seen 0.9626 vs 0.9632, unseen 0.2179 vs 0.7949; overall +2.9 points guarded.
-- **Structured features vs text-only ablation.** +2.1 CV points and +7.1 cold-start points; the raw test gap of 2.4 shrinks to 0.8 after the refund rule.
-- **Logreg vs SVC** are within noise (2 test rows apart raw, 4 guarded); logreg has the better log-loss (CV 0.3008 vs 0.3078).
-- **Errors.** 72 of 1,601 test rows are wrong (guarded), bucketed first match:
+| Model | Accuracy (primary) | Macro-F1 | Unseen-title accuracy |
+|---|---|---|---|
+| Majority baseline | 32.29% | 0.1229 | 21.79% |
+| Merchant lookup | 92.63% | 0.8961 | 21.79% |
+| Text-only SVC (ablation) | 94.69% | 0.9320 | 74.36% |
+| Logistic regression | 95.25% | 0.9396 | 78.21% |
+| **Calibrated linear SVC (selected)** | **95.50%** | **0.9413** | **79.49%** |
 
-| Bucket | Definition | n |
+The selected flow correctly classifies 1,529 of 1,601 transactions (Wilson 95% interval: 94.37–96.41%). For unseen titles, it gets 62 of 78 correct (69.25–86.96%); that smaller sample leaves substantial uncertainty. Most test transactions have titles already present in training, so the headline Accuracy reflects the current merchant mix. No acceptance thresholds for the two constraints have been set; these results are a baseline for setting them with the product team.
+
+The model improves on merchant lookup by 2.87 percentage points in overall Accuracy and 57.69 points on unseen titles. Structured features improve on the text-only model by 0.81 and 5.13 points respectively. Logistic regression is only four test transactions behind the selected SVC, so the overall difference is small. Of the 72 errors, 16 involve unseen titles, 12 titles with fewer than five training examples, and 44 ambiguous titles with multiple training labels; the latter suggests label inconsistency but has not been verified.
+
+### Probability calibration — separate assessment
+
+Classification scores assess the chosen category; calibration asks whether the returned confidence matches the observed probability of being correct. The SVC uses sigmoid calibration. Re-evaluating the committed artifact on the same 1,601 test transactions, including the refund rule, gives:
+
+| Probability diagnostic | Value | Definition |
 |---|---|---|
-| refund_rule | the rule is exact | 0 |
-| cold_start | normalised title never seen in training | 16 |
-| thin_support | title seen fewer than 5 times in training | 12 |
-| title_majority | prediction is one of the title's most frequent training labels (5 or more training rows) | 44 |
-| other | none of the above | 0 |
+| Top-label expected calibration error (ECE) | 0.0399 | Weighted absolute gap between mean confidence and observed Accuracy in 10 equal-width confidence bins |
+| Multiclass Brier score | 0.0857 | Mean sum of squared errors across all 12 class probabilities; unscaled, range 0–2 |
+| Log-loss | 0.2461 | Mean negative log probability assigned to the true class |
 
-  title_majority is suspected, unverified label inconsistency. Examples (true -> predicted): `LE DIPLOMATE` supermarkets -> restaurants (cold_start); `SODEXO WEB` supermarkets -> restaurants (thin_support); `MC DONALD'S` transport_means -> restaurants (title_majority).
-- **Confidence and coverage** (guarded, test period, from `evaluation.json`):
+Lower is better for all three. ECE directly summarises binned confidence agreement; Brier score and log-loss assess overall probability quality and also depend on discrimination. Mean confidence is 91.68%, compared with 95.50% observed Accuracy, suggesting conservative confidence overall; this does not establish calibration for every class or title group. ECE depends on binning, and sparse bins are uncertain. Any recalibration or confidence threshold should be fitted on validation data and checked on a fresh holdout.
 
-| Threshold on confidence | Covered | Accuracy on covered |
-|---|---|---|
-| 0.80 | 1,515 of 1,601 (94.6 %) | 0.9657 |
-| 0.90 | 1,425 of 1,601 (89.0 %) | 0.9663 |
-| 0.95 | 183 of 1,601 (11.4 %) | 0.9727 |
-
-  The threshold is a product decision, to be set on validation data.
-- **Caveats.** 1,601 test rows give about +-1 point, 78 unseen rows about +-9; cold-start CV measures unseen title strings, not merchants; hyper-parameters were chosen on the whole training period.
+Full training diagnostics and error details remain in `models/metrics.json`, `models/model_card.json`, and `models/evaluation.json`.
 
 ## How to run training
 
@@ -102,7 +94,7 @@ Python 3.11; run from the repository root.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest        # 204 tests, about 15 s
+python -m pytest        # 207 tests, about 15 s
 ```
 
 ```bash
@@ -201,4 +193,4 @@ Errors: invalid input gives **422** with a list-shaped `detail`, for example `{"
 
 - Seed 42 everywhere; scores and predictions are deterministic for the pinned versions, timings, timestamps and `model_version` are not.
 - The artifact is committed, so the API runs without retraining.
-- `python -m src.evaluate` re-checks it against the data (MD5, split date, row counts) and reproduces the stored accuracy (0.9550 guarded).
+- `python -m src.evaluate` re-checks it against the data (MD5, split date, row counts) and reproduces the complete-flow Accuracy (95.50%).

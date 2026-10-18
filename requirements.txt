@@ -1,0 +1,21 @@
+# core
+pandas==3.0.6
+numpy==2.4.6
+scipy==1.17.1
+# modelling
+scikit-learn==1.9.1
+joblib==1.6.0
+threadpoolctl==3.7.0
+# plots
+matplotlib==3.11.2
+seaborn==0.13.2
+# api
+fastapi==0.143.3
+uvicorn==0.54.0
+pydantic==2.14.1
+httpx==0.28.1
+# dev
+pytest==9.1.1
+nbconvert==7.17.2
+nbformat==5.11.1
+ipykernel==7.4.0

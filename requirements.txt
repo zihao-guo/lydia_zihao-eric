@@ -15,6 +15,8 @@ uvicorn==0.54.0
 pydantic==2.14.1
 httpx==0.28.1
 # dev
+# Starlette's TestClient backend; without it Starlette 1.8 warns at import and pytest (warnings as errors) fails
+httpx2==2.13.1
 pytest==9.1.1
 nbconvert==7.17.2
 nbformat==5.11.1

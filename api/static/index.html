@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transaction labeling</title>
+<style>
+  :root {
+    --accent: #2f5bea; --accent-dark: #2447bd; --bg: #f5f6f8; --card: #fff;
+    --text: #1c2230; --muted: #667085; --border: #d8dce4; --err: #b42318; --err-bg: #fef3f2;
+    --track: #e8ebf1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.45;
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .page { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { margin-bottom: 20px; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  .subtitle { margin: 0; color: var(--muted); }
+  .meta { margin-top: 8px; font-size: 0.85rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+  .meta a { color: var(--accent); }
+  #model-status.error { color: var(--err); font-weight: 600; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  @media (min-width: 820px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  h2 { margin: 0 0 12px; font-size: 1rem; }
+  h3 {
+    margin: 18px 0 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 4px; }
+  .examples span { color: var(--muted); font-size: 0.85rem; margin-right: 2px; }
+  button {
+    font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); padding: 8px 14px;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  button.example { padding: 4px 10px; font-size: 0.85rem; border-radius: 999px; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.primary:hover:not(:disabled) { background: var(--accent-dark); }
+  button:disabled { opacity: 0.6; cursor: progress; }
+  .field { margin-bottom: 12px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 12px; }
+  .card, .row > * { min-width: 0; }
+  @media (min-width: 480px) { .row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+  input, select {
+    width: 100%; max-width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: 6px; background: #fff; color: var(--text);
+  }
+  input.invalid, select.invalid { border-color: var(--err); background: var(--err-bg); }
+  .field-error { margin-top: 3px; font-size: 0.8rem; color: var(--err); font-weight: 600; }
+  .hint { margin-top: 3px; font-size: 0.78rem; color: var(--muted); }
+  .choice-field { border: 0; padding: 0; margin: 0 0 12px; }
+  .choice-field legend { padding: 0; margin-bottom: 6px; font-weight: 600; font-size: 0.85rem; }
+  .choices { display: flex; gap: 6px; padding: 4px; border-radius: 10px; background: var(--track); }
+  .choice { position: relative; flex: 1; margin: 0; cursor: pointer; }
+  .choice input { position: absolute; width: 1px; height: 1px; padding: 0; opacity: 0; }
+  .choice span {
+    display: block; padding: 9px 14px; text-align: center; border: 1px solid transparent;
+    border-radius: 7px; color: var(--muted);
+  }
+  .choice:hover span { color: var(--accent); }
+  .choice input:checked + span {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 2px 4px #1c22301a;
+  }
+  .choice input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .choice-field.invalid .choices { outline: 1px solid var(--err); }
+  .picker-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; min-height: 44px; }
+  .picker-trigger .picker-edit { font-size: 0.78rem; color: var(--accent); }
+  select.invalid + .picker-trigger { border-color: var(--err); background: var(--err-bg); }
+  dialog {
+    width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 32px);
+    padding: 0; border: 1px solid var(--border); border-radius: 16px;
+    color: var(--text); background: var(--card); box-shadow: 0 20px 70px #1c223033;
+  }
+  dialog::backdrop { background: #10182880; }
+  body:has(dialog[open]) { overflow: hidden; }
+  .picker-header { display: flex; align-items: start; justify-content: space-between; gap: 12px; padding: 20px 20px 12px; }
+  .picker-header h2 { font-size: 1.2rem; margin: 0 0 4px; }
+  .picker-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  .picker-content { padding: 0 20px 20px; }
+  .picker-group { margin: 16px 0 0; border: 0; padding: 0; min-width: 0; }
+  .picker-group legend { font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .picker-option { position: relative; margin: 0; cursor: pointer; font-weight: 400; }
+  .picker-option input { position: absolute; top: 14px; left: 12px; width: 16px; height: 16px; margin: 0; padding: 0; accent-color: var(--accent); }
+  .picker-option .option-card { display: block; height: 100%; padding: 12px 12px 12px 38px; border: 1px solid var(--border); border-radius: 10px; }
+  .option-card strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+  .option-card small { display: block; font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+  .picker-option:hover .option-card { border-color: var(--accent); }
+  .picker-option input:checked + .option-card { border-color: var(--accent); background: #eef2ff; box-shadow: inset 0 0 0 1px var(--accent); }
+  .picker-option input:focus-visible + .option-card { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .picker-footer { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; background: var(--card); border-top: 1px solid var(--border); }
+  @media (max-width: 479px) { .picker-grid { grid-template-columns: minmax(0, 1fr); } }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .input-modes { display: flex; gap: 6px; margin-bottom: 18px; }
+  .input-modes button { flex: 1; }
+  .input-modes button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  textarea { width: 100%; min-height: 190px; resize: vertical; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font: 0.8rem/1.6 ui-monospace, monospace; }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .table-scroll { max-width: 100%; overflow: auto; margin-top: 12px; max-height: 520px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+  th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; white-space: nowrap; }
+  th { background: var(--bg); position: sticky; top: 0; }
+  #csv-status { margin-top: 10px; color: var(--muted); font-size: 0.85rem; }
+  #csv-status.error { color: var(--err); }
+  #error-box {
+    background: var(--err-bg); color: var(--err); border: 1px solid #f4c7c3; border-radius: 6px;
+    padding: 10px 12px; margin-bottom: 12px; white-space: pre-line;
+  }
+  #error-box[hidden], [hidden] { display: none !important; }
+  .placeholder { color: var(--muted); margin: 0; }
+  .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  #result-minor { font-size: 2rem; font-weight: 700; line-height: 1.2; word-break: break-word; }
+  #result-major { font-size: 1.05rem; margin-top: 2px; }
+  .note { color: var(--muted); font-size: 0.85rem; }
+  .bar { height: 8px; background: var(--track); border-radius: 4px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); }
+  .conf { margin: 16px 0; }
+  .conf .bar { margin-top: 4px; height: 12px; }
+  #result-topk { list-style: none; margin: 6px 0 0; padding: 0; }
+  #result-topk li { margin-bottom: 8px; }
+  #result-topk .line { display: flex; justify-content: space-between; font-size: 0.9rem; }
+  #result-topk .bar { height: 5px; margin-top: 3px; }
+  #result-version { margin-top: 14px; font-size: 0.78rem; color: var(--muted); }
+  details { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+  summary { cursor: pointer; font-size: 0.85rem; color: var(--muted); }
+  pre {
+    max-width: 100%; background: #f1f3f7; border-radius: 6px; padding: 10px; overflow-x: auto;
+    font-size: 0.78rem; margin: 8px 0 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Transaction labeling</h1>
+    <p class="subtitle">Predict transaction categories manually or import a CSV.</p>
+    <div class="meta">
+      <span id="model-status">checking model…</span>
+      <a href="/docs">API docs</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card" aria-label="Transaction">
+      <div class="input-modes" role="group" aria-label="Input mode">
+        <button type="button" id="mode-manual" aria-pressed="true" aria-controls="manual-input">Manual input</button>
+        <button type="button" id="mode-csv" aria-pressed="false" aria-controls="csv-input">CSV input</button>
+      </div>
+      <div id="manual-input">
+      <div class="examples" id="examples">
+        <span>Try an example:</span>
+      </div>
+
+      <form id="predict-form" novalidate>
+        <h3>Transaction</h3>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" type="text" required autofocus placeholder="e.g. MAC DONALD S" autocomplete="off">
+          <div class="hint">Merchant label as shown on the transaction</div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="amount_value">Amount (EUR)</label>
+            <input id="amount_value" name="amount_value" type="number" step="0.01" required placeholder="-22.18">
+            <div class="hint">Negative = debit, positive = credit or refund</div>
+          </div>
+          <div class="field">
+            <label for="created_at">Date and time</label>
+            <input id="created_at" name="created_at" type="datetime-local">
+            <div class="hint">Optional; defaults to now</div>
+          </div>
+        </div>
+
+        <h3>Context</h3>
+        <div class="row">
+          <div class="field">
+            <label for="choose-merchant_pan_entry_method" id="label-merchant_pan_entry_method" title="How the card number was captured">Entry method</label>
+            <select id="merchant_pan_entry_method" name="merchant_pan_entry_method" hidden>
+              <option value="">not provided</option>
+              <option value="CHIP_CONTACTLESS" selected>CHIP_CONTACTLESS — contactless tap</option>
+              <option value="CARD_ON_FILE">CARD_ON_FILE — stored card charged by the merchant</option>
+              <option value="MANUAL">MANUAL — card number typed in</option>
+              <option value="CHIP">CHIP — card inserted, PIN entered</option>
+              <option value="CHIP_FALLBACK">CHIP_FALLBACK — chip failed, magnetic stripe used</option>
+              <option value="MAG_STRIPE">MAG_STRIPE — magnetic stripe swiped</option>
+            </select>
+            <button type="button" class="picker-trigger" id="choose-merchant_pan_entry_method" aria-haspopup="dialog" aria-controls="context-picker" aria-labelledby="label-merchant_pan_entry_method selected-merchant_pan_entry_method">
+              <span id="selected-merchant_pan_entry_method">Contactless tap</span><span class="picker-edit" aria-hidden="true">Change</span>
+            </button>
+          </div>
+          <div class="field">
+            <label for="choose-digitalization_type" id="label-digitalization_type" title="Tokenization / wallet used">Digitalization</label>
+            <select id="digitalization_type" name="digitalization_type" hidden>
+              <option value="">not provided</option>
+              <option value="none" selected>none — physical card, no wallet</option>
+              <option value="apple_pay">apple_pay — Apple Pay wallet</option>
+              <option value="google_pay">google_pay — Google Pay wallet</option>
+              <option value="samsung_pay">samsung_pay — Samsung Pay wallet</option>
+              <option value="UBER">UBER — token held by Uber</option>
+              <option value="PAYPAL">PAYPAL — token held by PayPal</option>
+              <option value="GOOGLE_PAYMENTS_INC">GOOGLE_PAYMENTS_INC — token held by Google Payments</option>
+              <option value="SPOTIFY">SPOTIFY — token held by Spotify</option>
+              <option value="NETFLIX">NETFLIX — token held by Netflix</option>
+              <option value="STRIPE">STRIPE — token held by Stripe</option>
+              <option value="UNKNOWN">UNKNOWN — tokenization not identified</option>
+            </select>
+            <button type="button" class="picker-trigger" id="choose-digitalization_type" aria-haspopup="dialog" aria-controls="context-picker" aria-labelledby="label-digitalization_type selected-digitalization_type">
+              <span id="selected-digitalization_type">Physical card</span><span class="picker-edit" aria-hidden="true">Change</span>
+            </button>
+          </div>
+          <fieldset class="field choice-field" id="pfm_recurring_frequency" aria-describedby="hint-recurrence">
+            <legend>Monthly recurring?</legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="pfm_recurring_frequency" value="" checked><span>No</span></label>
+              <label class="choice"><input type="radio" name="pfm_recurring_frequency" value="monthly"><span>Yes</span></label>
+            </div>
+            <div class="hint" id="hint-recurrence">Yes for a payment that repeats every month.</div>
+          </fieldset>
+          <fieldset class="field choice-field" id="status" aria-describedby="hint-status">
+            <legend>Refunded?</legend>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="status" value="completed" checked><span>No</span></label>
+              <label class="choice"><input type="radio" name="status" value="refunded"><span>Yes</span></label>
+            </div>
+            <div class="hint" id="hint-status">Yes marks the transaction as refunded.</div>
+          </fieldset>
+          <div class="field">
+            <label for="fees">Fees</label>
+            <input id="fees" name="fees" type="number" step="1" min="0" value="0">
+            <div class="hint">in cents</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="predict-btn" class="primary">Predict category</button>
+          <button type="button" id="clear-btn">Clear</button>
+        </div>
+      </form>
+      </div>
+      <div id="csv-input" hidden>
+        <h2>Import transactions</h2>
+        <div class="field">
+          <label for="csv-file">Upload a CSV file</label>
+          <input type="file" id="csv-file" accept=".csv,text/csv">
+        </div>
+        <div class="field">
+          <label for="csv-text">Or paste CSV content</label>
+          <textarea id="csv-text" spellcheck="false" placeholder="title,amount_value,digitalization_type,merchant_pan_entry_method,status&#10;MAC DONALD S,-22.18,apple_pay,CHIP_CONTACTLESS,completed"></textarea>
+        </div>
+        <div class="actions">
+          <button type="button" id="csv-preview-btn">Preview</button>
+          <button type="button" id="csv-predict-btn" class="primary">Predict CSV</button>
+          <button type="button" id="csv-clear-btn">Clear</button>
+        </div>
+        <p id="csv-status" role="status" aria-live="polite"></p>
+        <div id="csv-preview" hidden>
+          <h3>Preview · first 5 records</h3>
+          <div class="table-scroll"><table><thead><tr><th>Row</th><th>Title / merchant</th><th>Amount</th><th>Entry method</th><th>Digitalization</th></tr></thead><tbody id="csv-preview-rows"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="result" aria-live="polite" aria-label="Prediction">
+      <h2>Prediction</h2>
+      <div id="error-box" role="alert" hidden></div>
+      <p id="placeholder" class="placeholder">Fill in a transaction and press Predict, or pick an example.</p>
+
+      <div id="result-body" hidden>
+        <div class="label">Category</div>
+        <div id="result-minor"></div>
+        <div id="result-major"></div>
+        <div class="note" id="result-note" hidden>refunds have no major category</div>
+
+        <div class="conf">
+          <div class="label">Confidence <strong id="result-confidence"></strong></div>
+          <div class="bar"><i id="confidence-bar"></i></div>
+        </div>
+
+        <div class="label">Top candidates</div>
+        <ul id="result-topk"></ul>
+        <div id="result-version"></div>
+      </div>
+
+      <div id="batch-result" hidden>
+        <p id="batch-summary" class="note"></p>
+        <div class="table-scroll"><table><thead><tr><th>Row</th><th>Transaction ID</th><th>Title / merchant</th><th>Category</th><th>Major category</th><th>Confidence</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+      </div>
+
+      <details id="raw-json">
+        <summary>Request / response JSON</summary>
+        <pre id="raw-request">(no request yet)</pre>
+        <pre id="raw-response">(no response yet)</pre>
+      </details>
+    </section>
+  </main>
+</div>
+
+<dialog id="context-picker" aria-labelledby="picker-title" aria-describedby="picker-description">
+  <div class="picker-header">
+    <div><h2 id="picker-title">Choose an option</h2><p id="picker-description">Select one option, then apply your choice.</p></div>
+    <button type="button" id="picker-close" aria-label="Cancel and close">✕</button>
+  </div>
+  <div class="picker-content" id="picker-options" role="radiogroup" aria-labelledby="picker-title"></div>
+  <div class="picker-footer">
+    <button type="button" id="picker-cancel">Cancel</button>
+    <button type="button" class="primary" id="picker-apply">Apply selection</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  var EXAMPLES = [
+    { label: "McDonald's", data: { title: "MAC DONALD S", amount_value: -22.18, merchant_pan_entry_method: "CHIP_CONTACTLESS", digitalization_type: "apple_pay" } },
+    { label: "Supermarket", data: { title: "CARREFOUR MARKET", amount_value: -54.30, merchant_pan_entry_method: "CHIP_CONTACTLESS", digitalization_type: "apple_pay" } },
+    { label: "ATM withdrawal", data: { title: "RETRAIT DAB", amount_value: -50, merchant_pan_entry_method: "CHIP", digitalization_type: "none" } },
+    { label: "Fuel", data: { title: "TOTAL", amount_value: -53.26, merchant_pan_entry_method: "CHIP_CONTACTLESS", digitalization_type: "none" } },
+    { label: "Uber ride", data: { title: "UBR* PENDING.UBER.COM", amount_value: -2.90, merchant_pan_entry_method: "MANUAL", digitalization_type: "UBER" } },
+    { label: "App Store", data: { title: "APPLE.COM/BILL", amount_value: -2.89, merchant_pan_entry_method: "CARD_ON_FILE", digitalization_type: "GOOGLE_PAYMENTS_INC" } },
+    { label: "Refund", data: { title: "APPLE.COM/BILL", amount_value: 0.31, merchant_pan_entry_method: "CARD_ON_FILE", digitalization_type: "UNKNOWN", status: "refunded" } },
+    { label: "Pharmacy", data: { title: "PHARMACIE", amount_value: -9.65, merchant_pan_entry_method: "CHIP_CONTACTLESS", digitalization_type: "apple_pay" } }
+  ];
+
+  // Descriptions are shown only inside the selection dialog.
+  var DESCRIPTIONS = {
+    merchant_pan_entry_method: {
+      "": "Entry method unknown; the model treats it as missing.",
+      "CHIP_CONTACTLESS": "Card or phone tapped on a terminal (NFC). The most common value: half of all transactions, mostly in-store purchases.",
+      "CARD_ON_FILE": "The merchant keeps the card details and charges them without the card present: subscriptions, app stores, online marketplaces. Strongly associated with multimedia.",
+      "MANUAL": "Card number entered by hand, typically at an online checkout or in an app.",
+      "CHIP": "Card inserted in a terminal with the PIN. Common for cash withdrawals and larger in-store amounts.",
+      "CHIP_FALLBACK": "The chip could not be read and the terminal fell back to the magnetic stripe. Rare.",
+      "MAG_STRIPE": "Magnetic stripe swiped at the terminal. Rare."
+    },
+    digitalization_type: {
+      "": "Wallet or token unknown; the model treats it as missing.",
+      "none": "The physical card was used directly, with no wallet or platform token.",
+      "apple_pay": "Card tokenized in Apple Pay on an iPhone or Apple Watch.",
+      "google_pay": "Card tokenized in Google Pay on an Android phone.",
+      "samsung_pay": "Card tokenized in Samsung Pay.",
+      "UBER": "Uber stores the card and charges it for rides and deliveries; a strong hint for transport.",
+      "PAYPAL": "PayPal charges the card on behalf of an online merchant.",
+      "GOOGLE_PAYMENTS_INC": "Google Payments charges the card for Google services and Play Store purchases.",
+      "SPOTIFY": "Spotify charges the card for its subscription; a strong hint for multimedia.",
+      "NETFLIX": "Netflix charges the card for its subscription; a strong hint for multimedia.",
+      "STRIPE": "Stripe, a payment processor, charges the card on behalf of an online merchant.",
+      "UNKNOWN": "A wallet or token was used but the issuer could not identify which."
+    }
+  };
+
+  var PICKERS = {
+    merchant_pan_entry_method: {
+      title: "How was the card used?",
+      groups: [["Payment method", ["CHIP_CONTACTLESS", "CHIP", "CARD_ON_FILE", "MANUAL"]],
+        ["Other methods", ["CHIP_FALLBACK", "MAG_STRIPE"]], ["Not sure", [""]]],
+      labels: {CHIP_CONTACTLESS: "Contactless tap", CHIP: "Chip & PIN", CARD_ON_FILE: "Stored card",
+        MANUAL: "Entered manually", CHIP_FALLBACK: "Chip fallback", MAG_STRIPE: "Magnetic stripe", "": "Not provided"}
+    },
+    digitalization_type: {
+      title: "Which wallet or platform was used?",
+      groups: [["Physical card", ["none"]], ["Mobile wallets", ["apple_pay", "google_pay", "samsung_pay"]],
+        ["Platforms & services", ["UBER", "PAYPAL", "GOOGLE_PAYMENTS_INC", "SPOTIFY", "NETFLIX", "STRIPE"]],
+        ["Not sure", ["", "UNKNOWN"]]],
+      labels: {none: "Physical card", apple_pay: "Apple Pay", google_pay: "Google Pay", samsung_pay: "Samsung Pay",
+        UBER: "Uber", PAYPAL: "PayPal", GOOGLE_PAYMENTS_INC: "Google Payments", SPOTIFY: "Spotify",
+        NETFLIX: "Netflix", STRIPE: "Stripe", "": "Not provided", UNKNOWN: "Unidentified token"}
+    }
+  };
+
+  // Form defaults, keyed by field id (created_at is computed: see nowLocal()).
+  var DEFAULTS = {
+    title: "", amount_value: "", merchant_pan_entry_method: "CHIP_CONTACTLESS",
+    digitalization_type: "none", pfm_recurring_frequency: "", status: "completed", fees: "0"
+  };
+  var FIELDS = Object.keys(DEFAULTS).concat("created_at");
+
+  // CSV parsing and mapping: kept independent of the DOM for validation.
+  var DATASET_COLUMNS = ["transaction_id", "ref_id", "created_at", "member_id", "member_name", "merchant_id",
+    "merchant_name", "title", "amount_value", "amount_currency", "fees", "card_type", "card_name",
+    "digitalization_type", "merchant_pan_entry_method", "pfm_recurring_frequency", "status", "major_category", "minor_category"];
+  var CSV_INPUT_FIELDS = ["transaction_id", "created_at", "merchant_name", "title", "amount_value", "amount_currency",
+    "fees", "digitalization_type", "merchant_pan_entry_method", "pfm_recurring_frequency", "status"];
+
+  function parseCSV(text) {
+    var rows = [], row = [], value = "", quoted = false, closed = false, blank = true;
+    text = text.replace(/^\uFEFF/, "");
+    function cell() { row.push(value); value = ""; closed = false; }
+    function line() {
+      cell();
+      // only physically blank lines (whitespace only) are skipped; a record such as "," or "","" is kept
+      // so that its missing required fields are reported with the right record number
+      if (!blank) { rows.push(row); }
+      row = []; blank = true;
+    }
+    for (var i = 0; i < text.length; i++) {
+      var c = text[i];
+      if (quoted) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { value += '"'; i++; }
+          else { quoted = false; closed = true; }
+        } else { value += c; }
+      } else if (c === ",") { blank = false; cell(); }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") { i++; }
+        line();
+      } else if (c === '"') {
+        if (value !== "" || closed) { throw new Error("Invalid CSV quote near record " + (rows.length + 1) + "."); }
+        quoted = true; blank = false;
+      } else if (closed) {
+        if (!/\s/.test(c)) { throw new Error("Unexpected text after a closing CSV quote."); }
+      } else { if (!/\s/.test(c)) { blank = false; } value += c; }
+    }
+    if (quoted) { throw new Error("A quoted CSV field is not closed."); }
+    line();
+    return rows;
+  }
+
+  function csvTransactions(text) {
+    var rows = parseCSV(text);
+    if (!rows.length) { throw new Error("Upload a CSV or paste at least one transaction."); }
+    var first = rows[0].map(function (v) { return v.trim(); });
+    // a first row that names a known column is a header, unless it is a headerless dataset-shaped record
+    // (all dataset columns, numeric amount in the amount_value position) whose title happens to read "title";
+    // column names may themselves look numeric (e.g. a year column), so only that position is inspected
+    var namesColumn = first.indexOf("amount_value") >= 0 || first.indexOf("title") >= 0 || first.indexOf("merchant_name") >= 0;
+    var fullSignature = first.indexOf("amount_value") >= 0 && (first.indexOf("title") >= 0 || first.indexOf("merchant_name") >= 0);
+    var amountCell = first[DATASET_COLUMNS.indexOf("amount_value")];
+    var datasetRecord = first.length === DATASET_COLUMNS.length && amountCell !== "" && Number.isFinite(Number(amountCell));
+    var hasHeader = fullSignature || (namesColumn && !datasetRecord);
+    var headers = hasHeader ? first : DATASET_COLUMNS;
+    if (hasHeader) { rows.shift(); }
+    if (new Set(headers).size !== headers.length || headers.some(function (h) { return !h; })) {
+      throw new Error("CSV column names must be unique and non-empty.");
+    }
+    if (headers.indexOf("amount_value") < 0 || (headers.indexOf("title") < 0 && headers.indexOf("merchant_name") < 0)) {
+      throw new Error("CSV needs amount_value and either title or merchant_name columns.");
+    }
+    if (!rows.length) { throw new Error("The CSV has a header but no transactions."); }
+    return rows.map(function (row, index) {
+      var record = index + 1;
+      if (row.length !== headers.length) {
+        throw new Error("Record " + record + ": expected " + headers.length + " columns, found " + row.length + ". Include a header for a custom column order.");
+      }
+      var raw = Object.create(null), payload = {};
+      headers.forEach(function (h, i) { raw[h] = row[i].trim(); });
+      CSV_INPUT_FIELDS.forEach(function (key) { if (raw[key]) { payload[key] = raw[key]; } });
+      if (!payload.title && !payload.merchant_name) { throw new Error("Record " + record + ": title or merchant_name is required."); }
+      ["amount_value", "fees"].forEach(function (key) {
+        if (key === "fees" && !raw[key]) { return; }
+        var number = Number(raw[key]);
+        if (!raw[key] || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(raw[key]) || !Number.isFinite(number)) {
+          throw new Error("Record " + record + ": " + key + " must be a valid number.");
+        }
+        if (key === "amount_value" && Math.abs(number) > 1e9) { throw new Error("Record " + record + ": amount_value is out of range."); }
+        if (key === "fees" && (!Number.isInteger(number) || number < 0 || number > 100000000)) {
+          throw new Error("Record " + record + ": fees must be a non-negative integer in cents (maximum 100000000).");
+        }
+        payload[key] = number;
+      });
+      return payload;
+    });
+  }
+  // End CSV parsing and mapping.
+
+  function $(id) { return document.getElementById(id); }
+  function fieldValue(id) {
+    var el = $(id);
+    return el.matches(".choice-field") ? el.querySelector("input:checked").value : el.value;
+  }
+
+  function setFieldValue(id, value) {
+    var el = $(id);
+    if (el.matches(".choice-field")) {
+      el.querySelectorAll("input").forEach(function (input) { input.checked = input.value === String(value); });
+    } else {
+      el.value = value;
+    }
+  }
+  var form = $("predict-form"), btn = $("predict-btn"), errorBox = $("error-box");
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  // Current local time formatted for <input type="datetime-local"> (minute precision).
+  function nowLocal() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
+      "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function updatePickerSummary(selectId) {
+    $("selected-" + selectId).textContent = PICKERS[selectId].labels[$(selectId).value];
+  }
+
+  var picker = $("context-picker"), activePicker = null;
+
+  function openPicker(id) {
+    activePicker = id;
+    var config = PICKERS[id];
+    $("picker-title").textContent = config.title;
+    $("picker-options").textContent = "";
+    config.groups.forEach(function (group) {
+      var section = document.createElement("fieldset");
+      section.className = "picker-group";
+      var legend = document.createElement("legend");
+      legend.textContent = group[0];
+      var grid = document.createElement("div");
+      grid.className = "picker-grid";
+      group[1].forEach(function (value) {
+        var label = document.createElement("label");
+        label.className = "picker-option";
+        var input = document.createElement("input");
+        input.type = "radio";
+        input.name = "picker-choice";
+        input.value = value;
+        input.checked = value === $(id).value;
+        var card = document.createElement("span");
+        card.className = "option-card";
+        var title = document.createElement("strong");
+        title.textContent = config.labels[value];
+        var description = document.createElement("small");
+        description.textContent = DESCRIPTIONS[id][value];
+        card.append(title, description);
+        label.append(input, card);
+        grid.append(label);
+      });
+      section.append(legend, grid);
+      $("picker-options").append(section);
+    });
+    picker.showModal();
+    var checked = picker.querySelector("input:checked");
+    if (checked) { checked.focus(); }
+  }
+
+  Object.keys(PICKERS).forEach(function (id) {
+    $("choose-" + id).addEventListener("click", function () { openPicker(id); });
+  });
+  ["picker-close", "picker-cancel"].forEach(function (id) {
+    $(id).addEventListener("click", function () { picker.close(); });
+  });
+  picker.addEventListener("close", function () {
+    if (activePicker) { $("choose-" + activePicker).focus(); }
+    activePicker = null;
+  });
+  $("picker-apply").addEventListener("click", function () {
+    var selected = picker.querySelector("input:checked");
+    if (!selected || !activePicker) { return; }
+    $(activePicker).value = selected.value;
+    $(activePicker).dispatchEvent(new Event("change", {bubbles: true}));
+    picker.close();
+  });
+
+  function fillForm(values) {
+    FIELDS.forEach(function (id) {
+      var v = id === "created_at" ? nowLocal() : DEFAULTS[id];
+      if (values && values[id] !== undefined) { v = values[id]; }
+      setFieldValue(id, v);
+    });
+    Object.keys(PICKERS).forEach(updatePickerSummary);
+  }
+
+  function pct(x) { return (x * 100).toFixed(1) + "%"; }
+
+  var inflight = null;  // AbortController of the active request, if any
+
+  function clearErrors() {
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+    FIELDS.forEach(function (id) { $(id).classList.remove("invalid"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".field-error"), function (n) { n.remove(); });
+  }
+
+  // Mark a control invalid and show the message under it (after the hint, if any).
+  function fieldError(id, msg) {
+    var el = $(id);
+    el.classList.add("invalid");
+    var div = document.createElement("div");
+    div.className = "field-error";
+    div.textContent = msg;
+    (el.matches(".choice-field") ? el : el.parentNode).append(div);
+  }
+
+  function setBusy(busy) {
+    btn.disabled = busy;
+    btn.textContent = busy ? "Predicting…" : "Predict category";
+    Array.prototype.forEach.call(document.querySelectorAll("button.example"), function (b) { b.disabled = busy; });
+    $("csv-predict-btn").disabled = busy;
+    $("csv-predict-btn").textContent = busy ? "Predicting…" : "Predict CSV";
+  }
+
+  function showError(text) {
+    errorBox.textContent = text;
+    errorBox.hidden = false;
+    $("result-body").hidden = true;
+    $("placeholder").hidden = true;
+  }
+
+  function buildPayload() {
+    var payload = {
+      title: $("title").value,
+      amount_value: Number($("amount_value").value),
+      status: fieldValue("status"),
+      fees: parseInt($("fees").value, 10) || 0
+    };
+    if ($("amount_value").value === "") { payload.amount_value = null; }  // let the API report it
+    var created = $("created_at").value;
+    if (created) {
+      var d = new Date(created);
+      if (!isNaN(d)) { payload.created_at = d.toISOString(); }
+    }
+    ["merchant_pan_entry_method", "digitalization_type", "pfm_recurring_frequency"].forEach(function (id) {
+      var value = fieldValue(id);
+      if (value) { payload[id] = value; }
+    });
+    return payload;
+  }
+
+  function showResult(r) {
+    $("batch-result").hidden = true;
+    $("placeholder").hidden = true;
+    $("result-body").hidden = false;
+    $("result-minor").textContent = r.minor_category;
+    $("result-major").textContent = r.major_category || "—";
+    $("result-note").hidden = r.major_category !== null;
+    $("result-confidence").textContent = pct(r.confidence);
+    $("confidence-bar").style.width = pct(r.confidence);
+    var list = $("result-topk");
+    list.textContent = "";
+    r.top_k.forEach(function (c) {
+      var li = document.createElement("li");
+      var line = document.createElement("div");
+      line.className = "line";
+      var name = document.createElement("span");
+      name.textContent = c.label;
+      var p = document.createElement("span");
+      p.textContent = pct(c.probability);
+      line.append(name, p);
+      var bar = document.createElement("div");
+      bar.className = "bar";
+      var fill = document.createElement("i");
+      fill.style.width = pct(c.probability);
+      bar.append(fill);
+      li.append(line, bar);
+      list.append(li);
+    });
+    $("result-version").textContent = "model " + r.model_version;
+  }
+
+  function showValidation(detail) {
+    var lines = [];
+    (Array.isArray(detail) ? detail : []).forEach(function (e) {
+      var field = Array.isArray(e.loc) && e.loc.length ? String(e.loc[e.loc.length - 1]) : "request";
+      var msg = String(e.msg);
+      if (field === "body" && /title|merchant_name/.test(msg)) { field = "title"; }
+      if (FIELDS.indexOf(field) >= 0) {
+        fieldError(field, msg);
+      } else {
+        field = "request";
+      }
+      lines.push(field + ": " + msg);
+    });
+    showError(lines.join("\n") || "Invalid request.");
+  }
+
+  // Returns true when the form can be sent; otherwise shows messages under the controls.
+  function validateLocally() {
+    var lines = [], first = null;
+    if (!$("title").value.trim()) {
+      fieldError("title", "Title is required");
+      lines.push("title: Title is required");
+      first = "title";
+    }
+    var amt = $("amount_value").value;
+    if (amt === "" || !isFinite(Number(amt))) {
+      fieldError("amount_value", "Amount is required");
+      lines.push("amount_value: Amount is required");
+      first = first || "amount_value";
+    }
+    if (first) { showError(lines.join("\n")); $(first).focus(); }
+    return !first;
+  }
+
+  var csvRevision = 0;
+
+  function resetResults() {
+    $("result-body").hidden = true;
+    $("batch-result").hidden = true;
+    $("batch-rows").textContent = "";
+    $("placeholder").hidden = false;
+    $("raw-request").textContent = "(no request yet)";
+    $("raw-response").textContent = "(no response yet)";
+  }
+
+  function cancelPrediction() {
+    if (inflight) { inflight.abort(); inflight = null; }
+    setBusy(false);
+  }
+
+  function csvStatus(message, error) {
+    $("csv-status").textContent = message;
+    $("csv-status").classList.toggle("error", !!error);
+  }
+
+  function appendTableRow(body, values) {
+    var tr = document.createElement("tr");
+    values.forEach(function (value) {
+      var td = document.createElement("td");
+      td.textContent = value == null ? "—" : String(value);
+      tr.append(td);
+    });
+    body.append(tr);
+  }
+
+  function previewCSV() {
+    $("csv-preview").hidden = true;
+    var txns = csvTransactions($("csv-text").value);
+    $("csv-preview-rows").textContent = "";
+    txns.slice(0, 5).forEach(function (t, i) {
+      appendTableRow($("csv-preview-rows"), [i + 1, t.title || t.merchant_name, t.amount_value,
+        t.merchant_pan_entry_method, t.digitalization_type]);
+    });
+    $("csv-preview").hidden = false;
+    csvStatus(txns.length + " transaction" + (txns.length === 1 ? "" : "s") + " ready to predict.");
+    return txns;
+  }
+
+  async function predict(fromCSV) {
+    cancelPrediction();
+    clearErrors();
+    resetResults();
+    var txns;
+    if (fromCSV) {
+      try { txns = previewCSV(); }
+      catch (err) { csvStatus(err.message, true); return; }
+    } else {
+      if (!validateLocally()) { return; }
+      txns = [buildPayload()];
+    }
+    var mine = new AbortController();
+    inflight = mine;
+    var batch = fromCSV && txns.length > 1, processed = 0;
+    setBusy(true);
+    try {
+      for (var offset = 0; offset < txns.length; offset += 1000) {
+        var chunk = txns.slice(offset, offset + 1000);
+        var payload = batch ? chunk : chunk[0];
+        $("raw-request").textContent = JSON.stringify(payload, null, 2);
+        $("raw-response").textContent = "(waiting for response)";
+        if (fromCSV) { csvStatus("Predicting " + (offset + 1) + "–" + (offset + chunk.length) + " of " + txns.length + "…"); }
+        var resp = await fetch(batch ? "/v1/predict/batch" : "/v1/predict", {
+          method: "POST", headers: {"content-type": "application/json"},
+          body: JSON.stringify(payload), signal: mine.signal
+        });
+        var text = await resp.text();
+        if (mine !== inflight) { return; }
+        var body = null;
+        try { body = JSON.parse(text); } catch (e) { /* non-JSON error body */ }
+        $("raw-response").textContent = "HTTP " + resp.status + "\n" + (body !== null ? JSON.stringify(body, null, 2) : text);
+        if (!resp.ok) {
+          if (resp.status === 422 && !fromCSV) { showValidation(body && body.detail); return; }
+          if (resp.status === 422 && fromCSV) {
+            var details = body && Array.isArray(body.detail) ? body.detail.map(function (e) {
+              var loc = e.loc || [], row = typeof loc[1] === "number" ? offset + loc[1] + 1 : offset + 1;
+              return "Record " + row + " (" + loc.slice(batch ? 2 : 1).join(".") + "): " + e.msg;
+            }).join("\n") : "Invalid CSV transaction.";
+            throw new Error(details);
+          }
+          throw new Error(resp.status === 503 ? "Model not loaded. Restart the service with a trained model." : "Prediction failed (HTTP " + resp.status + ").");
+        }
+        if (batch) {
+          if (!Array.isArray(body) || body.length !== chunk.length) { throw new Error("The API returned an incomplete batch."); }
+          body.forEach(function (r, i) {
+            var txn = chunk[i];
+            appendTableRow($("batch-rows"), [offset + i + 1, r.transaction_id || txn.transaction_id,
+              txn.title || txn.merchant_name, r.minor_category, r.major_category, pct(r.confidence)]);
+          });
+          $("placeholder").hidden = true;
+          $("batch-result").hidden = false;
+          $("batch-summary").textContent = (offset + chunk.length) + " / " + txns.length + " transactions predicted. Results follow CSV order.";
+        } else { showResult(body); }
+        processed += chunk.length;
+      }
+      if (fromCSV) { csvStatus(processed + " transaction" + (processed === 1 ? "" : "s") + " predicted."); }
+    } catch (err) {
+      if (mine !== inflight) { return; }
+      var message = err instanceof TypeError ? "Could not reach the API. Is the server running?" : err.message;
+      if (fromCSV) { csvStatus(message + (processed ? " " + processed + " earlier predictions are shown below." : ""), true); }
+      showError(message);
+    } finally {
+      if (mine === inflight) { inflight = null; setBusy(false); }
+    }
+  }
+
+  async function loadHealth() {
+    var el = $("model-status");
+    try {
+      var resp = await fetch("/health");
+      var body = await resp.json();
+      if (resp.ok && body.model_loaded) {
+        el.textContent = "model " + body.model_version;
+        return;
+      }
+    } catch (e) { /* fall through to the error state */ }
+    el.textContent = "model not loaded — run `python -m src.train`";
+    el.classList.add("error");
+  }
+
+  EXAMPLES.forEach(function (ex) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "example";
+    b.textContent = ex.label;
+    b.addEventListener("click", function () {
+      fillForm(ex.data);
+      form.requestSubmit();
+    });
+    $("examples").append(b);
+  });
+
+  Object.keys(PICKERS).forEach(function (id) {
+    $(id).addEventListener("change", function () { updatePickerSummary(id); });
+  });
+
+  ["manual", "csv"].forEach(function (mode) {
+    $("mode-" + mode).addEventListener("click", function () {
+      cancelPrediction();
+      clearErrors();
+      resetResults();
+      csvStatus("");
+      $("manual-input").hidden = mode !== "manual";
+      $("csv-input").hidden = mode !== "csv";
+      $("mode-manual").setAttribute("aria-pressed", String(mode === "manual"));
+      $("mode-csv").setAttribute("aria-pressed", String(mode === "csv"));
+    });
+  });
+
+  function invalidateCSV() {
+    csvRevision++;
+    cancelPrediction();
+    clearErrors();
+    resetResults();
+    $("csv-preview").hidden = true;
+    csvStatus("");
+  }
+
+  $("csv-text").addEventListener("input", invalidateCSV);
+  $("csv-file").addEventListener("change", async function () {
+    invalidateCSV();
+    var file = $("csv-file").files[0];
+    if (!file) { return; }
+    $("csv-text").value = "";
+    var revision = csvRevision;
+    csvStatus("Reading " + file.name + "…");
+    try {
+      var text = await file.text();
+      if (revision !== csvRevision) { return; }
+      $("csv-text").value = text;
+      previewCSV();
+    } catch (err) { if (revision === csvRevision) { csvStatus(err.message, true); } }
+  });
+  $("csv-preview-btn").addEventListener("click", function () {
+    try { previewCSV(); } catch (err) { csvStatus(err.message, true); }
+  });
+  $("csv-predict-btn").addEventListener("click", function () { predict(true); });
+  $("csv-clear-btn").addEventListener("click", function () {
+    invalidateCSV();
+    $("csv-file").value = "";
+    $("csv-text").value = "";
+    $("csv-text").focus();
+  });
+  form.addEventListener("submit", function (e) { e.preventDefault(); predict(); });
+
+  // Preserve native radio keyboard controls; Enter submits from other inputs and selects.
+  form.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (e.key === "Enter" && t.type !== "radio" && (t.tagName === "INPUT" || t.tagName === "SELECT")) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  $("clear-btn").addEventListener("click", function () {
+    cancelPrediction();
+    fillForm(null);
+    clearErrors();
+    resetResults();
+    $("title").focus();
+  });
+
+  fillForm(null);
+  loadHealth();
+})();
+</script>
+</body>
+</html>

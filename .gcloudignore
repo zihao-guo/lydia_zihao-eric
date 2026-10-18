@@ -1,0 +1,15 @@
+# Upload runtime files and this repository's fitted model only.
+*
+!Dockerfile
+!requirements-runtime.txt
+!src/
+!src/__init__.py
+!src/preprocessing.py
+!src/models.py
+!src/evaluate.py
+!src/predict.py
+!src/api/
+!src/api/**
+!models/
+!models/model.joblib
+!models/model_card.json

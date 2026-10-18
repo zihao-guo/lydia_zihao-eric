@@ -1,0 +1,7 @@
+.git
+.pytest_cache
+**/__pycache__
+src/tests
+notebooks
+data
+*.md

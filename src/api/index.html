@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="api-base" content="">
 <title>Transaction labeling</title>
 <style>
   :root {
@@ -145,7 +146,7 @@
     <p class="subtitle">Predict transaction categories manually or import a CSV.</p>
     <div class="meta">
       <span id="model-status">checking model…</span>
-      <a href="/docs">API docs</a>
+      <a id="api-docs" href="/docs">API docs</a>
     </div>
   </header>
 
@@ -319,6 +320,9 @@
 <script>
 (function () {
   "use strict";
+
+  var API_BASE = document.querySelector('meta[name="api-base"]').content.replace(/\/+$/, "");
+  document.getElementById("api-docs").href = API_BASE + "/docs";
 
   var EXAMPLES = [
     { label: "McDonald's", data: { title: "MAC DONALD S", amount_value: -22.18, merchant_pan_entry_method: "CHIP_CONTACTLESS", digitalization_type: "apple_pay" } },
@@ -756,7 +760,7 @@
         $("raw-request").textContent = JSON.stringify(payload, null, 2);
         $("raw-response").textContent = "(waiting for response)";
         if (fromCSV) { csvStatus("Predicting " + (offset + 1) + "–" + (offset + chunk.length) + " of " + txns.length + "…"); }
-        var resp = await fetch(batch ? "/v1/predict/batch" : "/v1/predict", {
+        var resp = await fetch(API_BASE + (batch ? "/v1/predict/batch" : "/v1/predict"), {
           method: "POST", headers: {"content-type": "application/json"},
           body: JSON.stringify(payload), signal: mine.signal
         });
@@ -803,14 +807,14 @@
   async function loadHealth() {
     var el = $("model-status");
     try {
-      var resp = await fetch("/health");
+      var resp = await fetch(API_BASE + "/health");
       var body = await resp.json();
       if (resp.ok && body.model_loaded) {
         el.textContent = "model " + body.model_version;
         return;
       }
     } catch (e) { /* fall through to the error state */ }
-    el.textContent = "model not loaded — run `python -m src.train`";
+    el.textContent = "Model service unavailable. Please try again shortly.";
     el.classList.add("error");
   }
 

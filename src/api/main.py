@@ -19,6 +19,7 @@ from pathlib import Path
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from src.api.schemas import HealthOut, PredictionOut, TransactionIn
@@ -58,6 +59,19 @@ app = FastAPI(
     version=__version__,
     description="Predicts the minor and major category of a single card transaction.",
     lifespan=lifespan,
+)
+
+
+# Origins have no path component: a Pages project site shares its owner's origin.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        origin.strip().rstrip("/")
+        for origin in os.environ.get("LYDIA_CORS_ORIGINS", "https://zihao-guo.github.io").split(",")
+        if origin.strip()
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 

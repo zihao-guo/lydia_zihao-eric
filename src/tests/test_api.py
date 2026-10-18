@@ -17,6 +17,33 @@ def test_health(client):
     assert r.json() == {"status": "ok", "model_loaded": True, "model_version": "test-0"}
 
 
+def test_pages_cors_preflight(client):
+    response = client.options("/v1/predict", headers={
+        "Origin": "https://zihao-guo.github.io",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+    })
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://zihao-guo.github.io"
+
+
+def test_pages_cors_on_validation_errors(client):
+    response = client.post("/v1/predict", json={"amount_value": -1}, headers={
+        "Origin": "https://zihao-guo.github.io",
+    })
+    assert response.status_code == 422
+    assert response.headers["access-control-allow-origin"] == "https://zihao-guo.github.io"
+
+
+def test_cors_rejects_other_origins(client):
+    response = client.options("/v1/predict", headers={
+        "Origin": "https://unrelated.example",
+        "Access-Control-Request-Method": "POST",
+    })
+    assert response.status_code == 400
+    assert "access-control-allow-origin" not in response.headers
+
+
 def test_model_info(client):
     r = client.get("/v1/model")
     assert r.status_code == 200 and r.json()["model_name"] == "merchant_lookup"

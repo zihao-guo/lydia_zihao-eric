@@ -5,8 +5,9 @@ PY ?= python
 setup:
 	$(PY) -m pip install -r requirements.txt
 
+# Executes the notebook with the python3 kernel of the active environment (pip install -r requirements.txt provides ipykernel)
 eda:
-	cd notebooks && jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=600 --ExecutePreprocessor.kernel_name=python3 eda.ipynb
+	cd notebooks && $(PY) -m nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=600 --ExecutePreprocessor.kernel_name=python3 eda.ipynb
 
 train:
 	$(PY) -m src.train

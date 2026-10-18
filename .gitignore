@@ -3,7 +3,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .ipynb_checkpoints/
-.superpowers/
 .coverage
 htmlcov/
 .env

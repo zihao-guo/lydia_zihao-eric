@@ -8,8 +8,8 @@ import pytest
 def tiny_bundle_path(tmp_path_factory):
     """Small merchant_lookup bundle ({"pipeline", "metadata"}) for predictor tests.
 
-    src.models is imported inside the function so that modules which do not need it
-    (e.g. test_preprocessing.py) can be collected before src/models.py exists.
+    src.models is imported lazily so that collecting modules which do not need a model
+    stays independent of the modelling code.
     """
     from src.models import MODEL_ZOO
     from src.preprocessing import DATA_PATH, TARGET, clean, load_raw

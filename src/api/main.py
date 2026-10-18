@@ -1,6 +1,6 @@
 """FastAPI prediction service.
 
-Start: `uvicorn api.main:app --port 8000`; web form at `/`, OpenAPI docs at `/docs`.
+Start: `uvicorn src.api.main:app --port 8000`; web form at `/`, OpenAPI docs at `/docs`.
 
 Model loading policy: a MISSING artifact degrades gracefully (warning logged, model endpoints
 answer 503, /health reports unavailable). An artifact that exists but cannot be loaded (corrupt
@@ -21,7 +21,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from api.schemas import HealthOut, PredictionOut, TransactionIn
+from src.api.schemas import HealthOut, PredictionOut, TransactionIn
 from src import __version__
 from src.predict import Predictor, load_bundle
 from src.preprocessing import MODEL_PATH

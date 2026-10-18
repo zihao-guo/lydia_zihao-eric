@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture()
 def client(tiny_bundle_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tiny_bundle_path))
-    from api.main import app
+    from src.api.main import app
 
     with TestClient(app) as c:
         yield c
@@ -55,7 +55,7 @@ def test_batch_too_large_gives_422(client):
 
 def test_missing_model_gives_503(tmp_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tmp_path / "nope.joblib"))
-    from api.main import app
+    from src.api.main import app
 
     with TestClient(app) as c:
         r = c.get("/health")
@@ -66,7 +66,7 @@ def test_missing_model_gives_503(tmp_path, monkeypatch):
 
 def test_all_model_endpoints_503_without_model(tmp_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tmp_path / "nope.joblib"))
-    from api.main import app
+    from src.api.main import app
 
     item = {"title": "X", "amount_value": -1}
     with TestClient(app) as c:
@@ -116,7 +116,7 @@ def test_index_page_serves_form(client):
 
 def test_index_page_without_model(tmp_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tmp_path / "nope.joblib"))
-    from api.main import app
+    from src.api.main import app
 
     with TestClient(app) as c:
         assert c.get("/").status_code == 200
@@ -142,7 +142,7 @@ def test_predictor_value_error_becomes_422(client, monkeypatch):
 
 def test_other_predictor_exceptions_are_not_translated(tiny_bundle_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tiny_bundle_path))
-    from api.main import app
+    from src.api.main import app
 
     def boom(record):
         raise RuntimeError("secret internals")
@@ -157,7 +157,7 @@ def test_corrupt_model_fails_fast(tmp_path, monkeypatch):
     bad = tmp_path / "bad.joblib"
     bad.write_bytes(b"\x00garbage not a joblib file")
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(bad))
-    from api.main import app
+    from src.api.main import app
 
     with pytest.raises(Exception):
         with TestClient(app):
@@ -166,7 +166,7 @@ def test_corrupt_model_fails_fast(tmp_path, monkeypatch):
 
 def test_model_path_directory_fails_fast(tmp_path, monkeypatch):
     monkeypatch.setenv("LYDIA_MODEL_PATH", str(tmp_path))
-    from api.main import app
+    from src.api.main import app
 
     with pytest.raises(Exception):
         with TestClient(app):
@@ -256,7 +256,7 @@ def test_unknown_categorical_values(client):
 # --- request/response schemas ---
 
 from pydantic import ValidationError  # noqa: E402
-from api.schemas import PredictionOut, TransactionIn  # noqa: E402
+from src.api.schemas import PredictionOut, TransactionIn  # noqa: E402
 
 
 def test_minimal_valid_request():

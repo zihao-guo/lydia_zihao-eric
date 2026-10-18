@@ -172,7 +172,7 @@ def test_predict_import_does_not_load_matplotlib():
     import sys
     from pathlib import Path
 
-    root = Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[2]
     out = subprocess.run(
         [sys.executable, "-c", "import sys, src.predict; print('matplotlib' in sys.modules)"],
         cwd=root, capture_output=True, text=True, check=True,

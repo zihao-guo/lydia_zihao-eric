@@ -1,6 +1,6 @@
 {
   "best_model": "linear_svc",
-  "model_version": "linear_svc-20261018-151345",
+  "model_version": "linear_svc-20261018-154858",
   "quick": false,
   "data_md5": "2aae754ae1cbd30138ee647a7c5e9c7a",
   "split_date": "2026-05-24T11:07:07+00:00",
@@ -29,8 +29,8 @@
       "test_macro_f1_guarded": 0.941297362365875,
       "seen_accuracy": 0.9632304661851608,
       "unseen_accuracy": 0.7948717948717948,
-      "search_seconds": 89.7185313400405,
-      "refit_seconds": 9.921170949935913,
+      "search_seconds": 86.28777301579248,
+      "refit_seconds": 8.452087879180908,
       "best_params": "{\"clf__estimator__C\": 0.5}"
     },
     {
@@ -50,8 +50,8 @@
       "test_macro_f1_guarded": 0.9396135937058548,
       "seen_accuracy": 0.9612606697307945,
       "unseen_accuracy": 0.782051282051282,
-      "search_seconds": 133.72770453672274,
-      "refit_seconds": 7.973583698272705,
+      "search_seconds": 88.59741559709073,
+      "refit_seconds": 3.6365535259246826,
       "best_params": "{\"clf__C\": 10.0, \"clf__class_weight\": null}"
     },
     {
@@ -71,8 +71,8 @@
       "test_macro_f1_guarded": 0.9320239869112544,
       "seen_accuracy": 0.9573210768220617,
       "unseen_accuracy": 0.7435897435897436,
-      "search_seconds": 9.09446865908103,
-      "refit_seconds": 0.7076025009155273,
+      "search_seconds": 8.052973828016547,
+      "refit_seconds": 0.5765950679779053,
       "best_params": "{\"clf__estimator__C\": 0.5}"
     },
     {
@@ -92,8 +92,8 @@
       "test_macro_f1_guarded": 0.8961144870461006,
       "seen_accuracy": 0.9625738673670388,
       "unseen_accuracy": 0.21794871794871795,
-      "search_seconds": 0.2752359590085689,
-      "refit_seconds": 0.028355032001854852,
+      "search_seconds": 0.26339423898025416,
+      "refit_seconds": 0.02563066899892874,
       "best_params": "{}"
     },
     {
@@ -113,10 +113,26 @@
       "test_macro_f1_guarded": 0.12290051679586562,
       "seen_accuracy": 0.3282994090610637,
       "unseen_accuracy": 0.21794871794871795,
-      "search_seconds": 0.2784338080091402,
-      "refit_seconds": 0.025345058005768806,
+      "search_seconds": 0.25852802098961547,
+      "refit_seconds": 0.020241068996256217,
       "best_params": "{}"
     }
   ],
-  "selection_rule": "CV accuracy (desc), then CV macro-F1 (desc), then CV log-loss (asc), then model name (asc); a candidate with any non-finite CV score ranks after every fully valid candidate; scores are rounded to 12 decimals before comparison so float noise never decides a ranking"
+  "selection_rule": "CV accuracy (desc), then CV macro-F1 (desc), then CV log-loss (asc), then model name (asc); a candidate with any non-finite CV score ranks after every fully valid candidate; scores are rounded to 12 decimals before comparison so float noise never decides a ranking",
+  "legend": {
+    "cv_*": "raw model output on the training period (used for selection)",
+    "test_accuracy, test_macro_f1, test_log_loss, test_major_accuracy": "raw model output on the test period",
+    "test_*_guarded, coldstart_*, seen_accuracy, unseen_accuracy": "refund rule applied after prediction (served behaviour; the headline)"
+  },
+  "notes": [
+    "Trained at (UTC): 2026-10-18T15:48:58+00:00",
+    "Rows after deduplication: 8001 (120 exact duplicates removed)",
+    "Temporal split: train 6400 rows, test 1601 rows (test starts 2026-05-24T11:07:07+00:00)",
+    "CV: 5-fold stratified CV on the training period",
+    "Cold-start: 5-fold StratifiedGroupKFold grouped by normalised title on the training period (reported only, never used for selection; guarded predictions)",
+    "Title-agreement diagnostic (in-sample, training period): 0.9464 unadjusted, 0.9602 refund-adjusted (share of rows whose label equals the majority label of their normalised title; a diagnostic, not an upper bound on test accuracy)",
+    "Selected model: linear_svc (selection rule: CV accuracy (desc), then CV macro-F1 (desc), then CV log-loss (asc), then model name (asc); a candidate with any non-finite CV score ranks after every fully valid candidate; scores are rounded to 12 decimals before comparison so float noise never decides a ranking)",
+    "Selected model test set: n=1601, seen_n=1523, unseen_n=78; guarded test accuracy 0.9550 (Wilson 95% interval 0.9437 to 0.9641)",
+    "Selection uses raw CV scores; the refund rule helps weak models more than strong ones, so part of the ablation gap is refund detection the rule already provides."
+  ]
 }

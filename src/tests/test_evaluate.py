@@ -79,26 +79,31 @@ def test_confidence_coverage_default_thresholds_include_exact_decimal():
     assert np.isclose(row["coverage"], 2 / 3) and row["accuracy_on_covered"] == 1.0
 
 
-def test_df_to_markdown_has_header_separator():
-    md = ev.df_to_markdown(pd.DataFrame({"a": [1.23456], "b": ["x"]}))
-    assert md.splitlines()[1].startswith("|---")
+def test_no_plot_or_markdown_helpers():
+    for name in ("plot_confusion", "plot_confidence_coverage", "_pyplot", "df_to_markdown"):
+        assert not hasattr(ev, name)
 
 
-def test_per_class_top_confusions_and_plots(tmp_path):
+def test_evaluate_import_does_not_load_matplotlib():
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    proc = subprocess.run(
+        [sys.executable, "-c", "import sys, src.evaluate; print('matplotlib' in sys.modules)"],
+        cwd=Path(__file__).resolve().parents[2], capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip() == "False"
+
+
+def test_per_class_and_top_confusions():
     test = _frame(["A", "A", "B", "B"], ["x", "x", "y", "y"])
     pred = np.array(["x", "y", "y", "y"])
     rep = ev.per_class_report(test["minor_category"], pred)
     assert rep.set_index("class").loc["x", "recall"] == 0.5 and rep["support"].sum() == 4
     conf = ev.top_confusions(test, pred)
     assert conf.to_dict("records") == [{"text_norm": "a", "true": "x", "pred": "y", "count": 1}]
-    out = tmp_path / "sub" / "cm.png"
-    ev.plot_confusion(test["minor_category"], pred, ["x", "y"], out, "t")
-    assert out.stat().st_size > 0
-    cc = ev.confidence_coverage(test["minor_category"], np.array([[.9, .1], [.6, .4], [.2, .8], [.1, .9]]),
-                                ["x", "y"])
-    out2 = tmp_path / "sub2" / "cc.png"
-    ev.plot_confidence_coverage(cc, out2)
-    assert out2.stat().st_size > 0
 
 
 def test_wilson_interval():
@@ -156,7 +161,7 @@ def _bucket_fixture():
 
 def test_error_buckets_cover_all_five_buckets():
     train, test, pred, proba = _bucket_fixture()
-    # make a refund_rule error: positive amount, predicted something else
+    # build a refund_rule error: positive amount, predicted something else
     test.loc[5, "minor_category"] = "refund"
     err = ev.error_buckets(train, test, pred, proba, ["x", "y", "z"])
     by_title = {(r.title, r.true): r for r in err.itertuples()}
@@ -266,54 +271,60 @@ def quick_run(tmp_path_factory):
     from src.train import run
 
     base = tmp_path_factory.mktemp("evalrun")
-    out, rep = base / "models", base / "reports"
-    run(models=["majority", "merchant_lookup"], quick=True, out_dir=out, reports_dir=rep)
-    return out, rep
+    out = base / "models"
+    run(models=["majority", "merchant_lookup"], quick=True, out_dir=out)
+    return out
 
 
-def _argv(out, rep, model=None, *extra):
-    return ["--model", str(model or out / "model.joblib"), "--out", str(out), "--reports", str(rep), *extra]
+def _argv(out, model=None, *extra):
+    return ["--model", str(model or out / "model.joblib"), "--out", str(out), *extra]
 
 
-def test_evaluate_cli_end_to_end(quick_run, tmp_path):
+def test_evaluate_cli_end_to_end(quick_run, tmp_path, capsys):
     import json
 
-    out, rep = quick_run
+    out = quick_run
     with pytest.raises(SystemExit):
-        ev.main(_argv(out, rep))
-    out2, rep2 = tmp_path / "m", tmp_path / "r"
-    ev.main(_argv(out2, rep2, out / "model.joblib", "--force"))
-    for f in ("confusion_minor.png", "confusion_major.png", "confidence_coverage.png"):
-        assert (rep2 / "figures" / f).stat().st_size > 0
-    text = (rep2 / "error_analysis_tables.md").read_text()
-    for section in ("## Headline", "## Per-class report", "## Top confusions", "## Seen vs unseen",
-                    "## Error buckets", "## Confidence vs coverage", "covered_n", "correct_n"):
-        assert section in text
-    assert (rep2 / "test_errors.csv").exists()
+        ev.main(_argv(out))
+    out2 = tmp_path / "m"
+    ev.main(_argv(out2, out / "model.joblib", "--force"))
+    assert [p.name for p in tmp_path.iterdir()] == ["m"]
+    assert [p.name for p in out2.iterdir()] == ["evaluation.json"]
+    stdout = capsys.readouterr().out
+    for text in ("raw (model only)", "guarded (served)", "accuracy [95% CI]", "seen titles", "unseen titles",
+                 "bucket", "cold_start", "covered_n", "correct_n", "threshold"):
+        assert text in stdout
     res = json.loads((out2 / "evaluation.json").read_text())
     assert {"model_name", "model_version", "data_md5", "split_date", "n_test", "raw", "guarded", "intervals",
-            "seen_unseen", "per_class", "bucket_summary", "coverage", "recommended_threshold"} <= set(res)
+            "seen_unseen", "per_class", "top_confusions", "errors", "examples_per_bucket",
+            "bucket_summary", "coverage", "recommended_threshold"} <= set(res)
     assert all({"covered_n", "correct_n"} <= set(r) for r in res["coverage"])
     rt = res["recommended_threshold"]
     if rt is not None:
         assert rt["covered_n"] + rt["abstain_n"] == res["n_test"]
     assert [b["bucket"] for b in res["bucket_summary"]] == ev.ERROR_BUCKETS
+    assert sum(b["n"] for b in res["bucket_summary"]) == len(res["errors"])
+    assert set(res["examples_per_bucket"]) == set(ev.ERROR_BUCKETS)
+    assert all(len(v) <= 5 for v in res["examples_per_bucket"].values())
+    if res["errors"]:
+        assert {"title", "text_norm", "true", "pred", "confidence", "bucket", "train_rows_for_title",
+                "train_majority_label", "train_top_labels"} == set(res["errors"][0])
 
 
 @pytest.mark.parametrize("field,value", [("data_md5", "0" * 32), ("train_rows", -1)])
 def test_evaluate_provenance_rejection_and_force(quick_run, tmp_path, field, value):
     import joblib
 
-    out, _ = quick_run
+    out = quick_run
     bundle = joblib.load(out / "model.joblib")
     bundle["metadata"] = {**bundle["metadata"], field: value, "quick": False}
     bad = tmp_path / "bad.joblib"
     joblib.dump(bundle, bad)
-    o, r = tmp_path / "o", tmp_path / "r"
+    o = tmp_path / "o"
     with pytest.raises(SystemExit):
-        ev.main(_argv(o, r, bad))
+        ev.main(_argv(o, bad))
     assert not (o / "evaluation.json").exists()
-    ev.main(_argv(o, r, bad, "--force"))
+    ev.main(_argv(o, bad, "--force"))
     assert (o / "evaluation.json").exists()
 
 

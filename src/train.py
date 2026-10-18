@@ -1,6 +1,6 @@
 """Training CLI: compare the model zoo by CV, score the temporal test period, persist the best model.
 
-Usage: python -m src.train [--models a,b] [--quick] [--out DIR] [--reports DIR] [--data CSV]
+Usage: python -m src.train [--models a,b] [--quick] [--out DIR] [--data CSV]
 
 Selection uses the training-period CV scores only. The test period is scored once per model and
 never influences the choice. A title-grouped (cold-start) CV is reported next to the CV scores but
@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import logging
+import os
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,7 +27,6 @@ from threadpoolctl import threadpool_limits
 from src import __version__
 from src.evaluate import (
     apply_refund_guard,
-    df_to_markdown,
     dump_json,
     evaluate_predictions,
     predictions_from_proba,
@@ -40,7 +40,6 @@ from src.preprocessing import (
     DATA_PATH,
     MODELS_DIR,
     NUM_COLS,
-    REPORTS_DIR,
     SEED,
     TARGET,
     TEXT_COL,
@@ -181,6 +180,30 @@ def _stratified_subsample(df: pd.DataFrame, n_rows: int) -> pd.DataFrame:
     return out
 
 
+def _tmp_path(path) -> Path:
+    path = Path(path)
+    return path.with_suffix(path.suffix + ".tmp")
+
+
+def _atomic_dump(obj, path) -> None:
+    """joblib-dump to a temporary sibling, then rename, so readers never see a partial file."""
+    tmp = _tmp_path(path)
+    joblib.dump(obj, tmp)
+    os.replace(tmp, path)
+
+
+def _atomic_json(obj, path) -> None:
+    tmp = _tmp_path(path)
+    dump_json(obj, tmp)
+    os.replace(tmp, path)
+
+
+def _atomic_csv(df, path) -> None:
+    tmp = _tmp_path(path)
+    df.to_csv(tmp, index=False)
+    os.replace(tmp, path)
+
+
 def _md5(path: Path) -> str:
     return hashlib.md5(Path(path).read_bytes()).hexdigest()
 
@@ -189,12 +212,10 @@ def run(
     models: list[str] | None = None,
     quick: bool = False,
     out_dir: Path = MODELS_DIR,
-    reports_dir: Path = REPORTS_DIR,
     data_path: Path = DATA_PATH,
 ) -> dict:
-    out_dir, reports_dir = Path(out_dir), Path(reports_dir)
-    for d in (out_dir, reports_dir):
-        d.mkdir(parents=True, exist_ok=True)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     names = list(models or MODEL_ZOO)
     unknown = [n for n in names if n not in MODEL_ZOO]
     if unknown:
@@ -297,7 +318,7 @@ def run(
     best = fitted[best_name]
     model, best_params = best["model"], best["best_params"]
     classes = list(model.classes_)
-    comparison.to_csv(out_dir / "model_comparison.csv", index=False)
+    _atomic_csv(comparison, out_dir / "model_comparison.csv")
 
     features = _describe_features(model)
     trained_at = datetime.now(UTC)
@@ -328,8 +349,36 @@ def run(
         "selection_rule": SELECTION_RULE,
         "package_version": __version__,
     }
-    joblib.dump({"pipeline": model, "metadata": metadata}, out_dir / "model.joblib")
+    _atomic_dump({"pipeline": model, "metadata": metadata}, out_dir / "model.joblib")
 
+    sub = " (stratified subsample)" if quick else ""
+    cv_text = (f"{n_cv}-fold stratified CV on a stratified training subsample (quick mode)" if quick
+               else f"{n_cv}-fold stratified CV on the training period")
+    lo, hi = wilson_interval(round(best["ev_g"].accuracy * len(test_df)), len(test_df))
+    su = best["su"]
+    legend = {
+        "cv_*": "raw model output on the training period (used for selection)",
+        "test_accuracy, test_macro_f1, test_log_loss, test_major_accuracy": "raw model output on the test period",
+        "test_*_guarded, coldstart_*, seen_accuracy, unseen_accuracy": (
+            "refund rule applied after prediction (served behaviour; the headline)"),
+    }
+    notes = [
+        f"Trained at (UTC): {trained_at.isoformat(timespec='seconds')}",
+        f"Rows after deduplication: {len(df)} ({rows_deduplicated} exact duplicates removed)",
+        f"Temporal split: train {len(train_df)} rows{sub}, test {len(test_df)} rows{sub} (test starts {split_date})",
+        f"CV: {cv_text}",
+        f"Cold-start: {n_cold}-fold StratifiedGroupKFold grouped by normalised title on the training period "
+        "(reported only, never used for selection; guarded predictions"
+        + (", run on the quick-mode training subsample" if quick else "") + ")",
+        f"Title-agreement diagnostic (in-sample, training period): {agreement['train']:.4f} unadjusted, "
+        f"{agreement['train_refund_adjusted']:.4f} refund-adjusted (share of rows whose label equals the "
+        "majority label of their normalised title; a diagnostic, not an upper bound on test accuracy)",
+        f"Selected model: {best_name} (selection rule: {SELECTION_RULE})",
+        f"Selected model test set: n={len(test_df)}, seen_n={su['seen_n']}, unseen_n={su['unseen_n']}; "
+        f"guarded test accuracy {best['ev_g'].accuracy:.4f} (Wilson 95% interval {lo:.4f} to {hi:.4f})",
+        "Selection uses raw CV scores; the refund rule helps weak models more than strong ones, "
+        "so part of the ablation gap is refund detection the rule already provides.",
+    ]
     metrics = {
         "best_model": best_name,
         "model_version": model_version,
@@ -342,12 +391,11 @@ def run(
         "title_agreement": agreement,
         "comparison": comparison.to_dict("records"),
         "selection_rule": SELECTION_RULE,
+        "legend": legend,
+        "notes": notes,
     }
-    dump_json(metrics, out_dir / "metrics.json")
+    _atomic_json(metrics, out_dir / "metrics.json")
 
-    sub = " (stratified subsample)" if quick else ""
-    cv_text = (f"{n_cv}-fold stratified CV on a stratified training subsample (quick mode)" if quick
-               else f"{n_cv}-fold stratified CV on the training period")
     model_card = {
         "model_name": best_name,
         "model_version": model_version,
@@ -395,39 +443,8 @@ def run(
         ],
         "package_version": __version__,
     }
-    dump_json(model_card, out_dir / "model_card.json")
+    _atomic_json(model_card, out_dir / "model_card.json")
 
-    lo, hi = wilson_interval(round(best["ev_g"].accuracy * len(test_df)), len(test_df))
-    su = best["su"]
-    header = (
-        "# Model comparison\n\n"
-        f"- Trained at (UTC): {trained_at.isoformat(timespec='seconds')}  \n"
-        f"- Rows after deduplication: {len(df)} ({rows_deduplicated} exact duplicates removed)  \n"
-        f"- Temporal split: train {len(train_df)} rows{sub}, test {len(test_df)} rows{sub} "
-        f"(test starts {split_date})  \n"
-        f"- CV: {cv_text}  \n"
-        "- Legend: cv_*: raw model output on the training period (selection); test_accuracy / "
-        "test_macro_f1 / test_log_loss / test_major_accuracy: raw model output on the test period; "
-        "*_guarded, coldstart_*, seen_accuracy, unseen_accuracy: with the refund rule applied after "
-        "prediction (served behaviour; the headline)  \n"
-        f"- Cold-start: {n_cold}-fold StratifiedGroupKFold grouped by normalised title on the training "
-        "period (reported only, never used for selection; guarded predictions"
-        + (", run on the quick-mode training subsample" if quick else "") + ")  \n"
-        f"- Title-agreement diagnostic (in-sample, training period): "
-        f"{agreement['train']:.4f} unadjusted, {agreement['train_refund_adjusted']:.4f} refund-adjusted "
-        "(share of rows whose label equals the majority label of their normalised title; "
-        "a diagnostic, not an upper bound on test accuracy)  \n"
-        f"- Selected model: **{best_name}** (selection rule: {SELECTION_RULE})  \n"
-        f"- Selected model test set: n={len(test_df)}, seen_n={su['seen_n']}, unseen_n={su['unseen_n']}; "
-        f"guarded test accuracy {best['ev_g'].accuracy:.4f} (Wilson 95% interval {lo:.4f} to {hi:.4f})  \n"
-        "- Selection uses raw CV scores; the refund rule helps weak models more than strong ones, "
-        "so part of the ablation gap is refund detection the rule already provides.\n\n"
-    )
-    (reports_dir / "model_comparison.md").write_text(
-        header + df_to_markdown(comparison.drop(columns=["best_params"]))
-        + "\n\n## Best parameters\n\n"
-        + df_to_markdown(comparison[["model", "best_params"]]) + "\n"
-    )
     logger.info("selected %s (%s); artifacts in %s", best_name, model_version, out_dir)
     return metrics
 
@@ -438,14 +455,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--quick", action="store_true",
                         help="stratified subsample (~1200 train / ~300 test rows), 2-fold CV, no grid search")
     parser.add_argument("--out", type=Path, default=MODELS_DIR)
-    parser.add_argument("--reports", type=Path, default=REPORTS_DIR)
     parser.add_argument("--data", type=Path, default=DATA_PATH)
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     models = [m.strip() for m in args.models.split(",") if m.strip()] if args.models else None
-    metrics = run(models=models, quick=args.quick, out_dir=args.out, reports_dir=args.reports,
-                  data_path=args.data)
-    print(df_to_markdown(pd.DataFrame(metrics["comparison"]).drop(columns=["best_params"])))
+    metrics = run(models=models, quick=args.quick, out_dir=args.out, data_path=args.data)
+    print(pd.DataFrame(metrics["comparison"]).drop(columns=["best_params"]).to_string(index=False))
     print(f"\nselected: {metrics['best_model']} ({metrics['model_version']})")
 
 

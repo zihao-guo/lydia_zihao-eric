@@ -34,10 +34,9 @@ def _strict_loads(text):
 @pytest.fixture(scope="module")
 def quick_run(tmp_path_factory):
     root = tmp_path_factory.mktemp("quick")
-    out, rep = root / "models", root / "reports"
-    metrics = run(models=["majority", "merchant_lookup"], quick=True, out_dir=out, reports_dir=rep,
-                  data_path=DATA_PATH)
-    return metrics, out, rep
+    out = root / "models"
+    metrics = run(models=["majority", "merchant_lookup"], quick=True, out_dir=out, data_path=DATA_PATH)
+    return metrics, out, root
 
 
 @pytest.fixture(scope="module")
@@ -48,10 +47,10 @@ def sample_split():
 
 
 def test_quick_run_writes_artifacts(quick_run):
-    metrics, out, rep = quick_run
-    for f in ("model.joblib", "metrics.json", "model_card.json", "model_comparison.csv"):
-        assert (out / f).exists()
-    assert (rep / "model_comparison.md").exists()
+    metrics, out, root = quick_run
+    assert sorted(p.name for p in out.iterdir()) == [
+        "metrics.json", "model.joblib", "model_card.json", "model_comparison.csv"]
+    assert [p.name for p in root.iterdir()] == ["models"]  # nothing is written outside the model directory
     bundle = joblib.load(out / "model.joblib")
     assert set(bundle) == {"pipeline", "metadata"}
     md = bundle["metadata"]
@@ -64,9 +63,12 @@ def test_quick_run_writes_artifacts(quick_run):
     assert md["train_rows"] < 1500 and md["test_rows"] < 400
     assert md["test_metrics_guarded"]["n"] == md["test_rows"]
     assert md["coldstart_metrics"]["n_splits"] == 3
-    report = (rep / "model_comparison.md").read_text()
-    assert "Selected model" in report and "Legend:" in report and "Wilson 95%" in report
-    assert "(stratified subsample)" in report
+    saved = json.loads((out / "metrics.json").read_text())
+    notes = " ".join(saved["notes"])
+    assert "Selected model" in notes and "Wilson 95%" in notes and "seen_n=" in notes
+    assert "(stratified subsample)" in notes and "Selection uses raw CV" in notes
+    assert "Cold-start" in notes and "CV:" in notes
+    assert saved["legend"] and all(isinstance(v, str) for v in saved["legend"].values())
     assert set(md["title_agreement"]) == {"train", "train_refund_adjusted"}
 
 
@@ -217,9 +219,10 @@ def test_stratified_subsample_keeps_rare_class():
 def test_artifact_produced_by_cli_loads_with_module_src_models(tmp_path):
     subprocess.run(
         [sys.executable, "-m", "src.train", "--quick", "--models", "merchant_lookup",
-         "--out", str(tmp_path / "m"), "--reports", str(tmp_path / "r")],
+         "--out", str(tmp_path / "m")],
         cwd=REPO_ROOT, check=True, capture_output=True,
     )
+    assert [p.name for p in tmp_path.iterdir()] == ["m"]
     proc = subprocess.run(
         [sys.executable, "-c",
          "import joblib,sys; b=joblib.load(sys.argv[1]); print(type(b['pipeline'].named_steps['clf']).__module__)",
@@ -248,3 +251,8 @@ def test_describe_features_dict(sample_split):
     train, _ = sample_split
     d = _describe_features(MODEL_ZOO["merchant_lookup"].factory().fit(train, train[TARGET]))
     assert set(d) == {"blocks", "input_columns", "text"} and "title_lookup" in d["blocks"]
+
+
+def test_quick_run_leaves_no_tmp_files(quick_run):
+    _, out, _ = quick_run
+    assert list(out.glob("*.tmp")) == []

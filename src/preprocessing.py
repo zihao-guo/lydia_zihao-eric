@@ -24,8 +24,6 @@ SEED = 42
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = REPO_ROOT / "data" / "transactions.csv"
 MODELS_DIR = REPO_ROOT / "models"
-REPORTS_DIR = REPO_ROOT / "reports"
-FIGURES_DIR = REPORTS_DIR / "figures"
 MODEL_PATH = MODELS_DIR / "model.joblib"
 
 # Temporal split: first TRAIN_FRACTION of rows ordered by created_at is training.

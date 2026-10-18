@@ -1,4 +1,4 @@
-"""Evaluation helpers: metrics, refund guard, seen/unseen breakdown, error buckets and report utilities.
+"""Evaluation helpers: metrics, refund guard, seen/unseen breakdown, error buckets and the evaluation CLI.
 
 Imported by `src.train`; this module never imports `src.train`.
 """
@@ -17,7 +17,6 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
-    confusion_matrix,
     f1_score,
     log_loss,
     precision_recall_fscore_support,
@@ -25,10 +24,8 @@ from sklearn.metrics import (
 
 from src.preprocessing import (
     DATA_PATH,
-    MAJOR_CLASSES,
     MODEL_PATH,
     MODELS_DIR,
-    REPORTS_DIR,
     TARGET,
     TEXT_COL,
     TEXT_NORM_COL,
@@ -272,82 +269,8 @@ def bucket_summary(errors_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def _pyplot():
-    """Import pyplot lazily (headless backend) so inference never loads plotting code."""
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    return plt
-
-
-def plot_confusion(y_true, y_pred, labels, path, title) -> None:
-    """Row-normalised confusion matrix with annotated cells, saved as PNG."""
-    plt = _pyplot()
-    labels = list(labels)
-    cm = confusion_matrix(y_true, y_pred, labels=labels)
-    norm = cm / np.maximum(cm.sum(axis=1, keepdims=True), 1)
-    size = max(5.0, 0.75 * len(labels))
-    fig, ax = plt.subplots(figsize=(size + 1, size))
-    im = ax.imshow(norm, cmap="Blues", vmin=0, vmax=1)
-    ax.set_xticks(range(len(labels)), labels, rotation=60, ha="right")
-    ax.set_yticks(range(len(labels)), labels)
-    for i in range(len(labels)):
-        for j in range(len(labels)):
-            if cm[i, j]:
-                ax.text(j, i, f"{norm[i, j]:.2f}\n({cm[i, j]})", ha="center", va="center", fontsize=7,
-                        color="white" if norm[i, j] > 0.5 else "black")
-    ax.set_xlabel("predicted")
-    ax.set_ylabel("true")
-    ax.set_title(title)
-    fig.colorbar(im, ax=ax, fraction=0.046, label="share of true class")
-    fig.tight_layout()
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=130)
-    plt.close(fig)
-
-
-def plot_confidence_coverage(cc: pd.DataFrame, path) -> None:
-    plt = _pyplot()
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    ax.plot(cc["coverage"], cc["accuracy_on_covered"], marker="o")
-    offsets = [(6, -12), (6, 8)]
-    k = 0
-    for _, r in cc.iterrows():
-        if not np.isclose([0.50, 0.70, 0.80, 0.90, 0.95], r["threshold"]).any():
-            continue
-        label = f"{r['threshold']:.2f}"
-        if "covered_n" in cc.columns:
-            label += f" (n={int(r['covered_n'])})"
-        ax.annotate(label, (r["coverage"], r["accuracy_on_covered"]),
-                    textcoords="offset points", xytext=offsets[k % 2], fontsize=7)
-        k += 1
-    ax.set_xlabel("coverage (share of transactions auto-labelled)")
-    ax.set_ylabel("accuracy on auto-labelled")
-    ax.set_title("Confidence threshold: coverage vs accuracy (test)")
-    ax.grid(alpha=0.3)
-    fig.tight_layout()
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=130)
-    plt.close(fig)
-
-
-def df_to_markdown(df: pd.DataFrame, floatfmt: str = ".4f") -> str:
-    def fmt(v) -> str:
-        if isinstance(v, (float, np.floating)):
-            return format(v, floatfmt)
-        return str(v).replace("|", "\\|")
-
-    cols = [str(c) for c in df.columns]
-    lines = ["| " + " | ".join(cols) + " |", "|" + "|".join(["---"] * len(cols)) + "|"]
-    for row in df.itertuples(index=False):
-        lines.append("| " + " | ".join(fmt(v) for v in row) + " |")
-    return "\n".join(lines)
-
-
 def to_json_safe(obj):
-    """Recursively make an object strict-JSON safe: numpy -> python, non-finite floats -> None."""
+    """Recursively convert an object to strict-JSON safe values: numpy -> python, non-finite floats -> None."""
     if isinstance(obj, dict):
         return {str(k): to_json_safe(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple, set)):
@@ -417,7 +340,6 @@ def main(argv: list[str] | None = None) -> dict:
     parser.add_argument("--model", type=Path, default=MODEL_PATH)
     parser.add_argument("--data", type=Path, default=DATA_PATH)
     parser.add_argument("--out", type=Path, default=MODELS_DIR)
-    parser.add_argument("--reports", type=Path, default=REPORTS_DIR)
     parser.add_argument("--force", action="store_true",
                         help="evaluate a quick artifact / ignore provenance mismatches")
     args = parser.parse_args(argv)
@@ -473,16 +395,8 @@ def main(argv: list[str] | None = None) -> dict:
     cc = confidence_coverage(y_true, proba, classes)
     rec = recommended_threshold(cc, n)
 
-    reports, out = Path(args.reports), Path(args.out)
-    fig_dir = reports / "figures"
-    reports.mkdir(parents=True, exist_ok=True)
+    out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    plot_confusion(y_true, pred, classes, fig_dir / "confusion_minor.png", "Minor categories (test, guarded)")
-    major = lambda a: [_major_or_none(v) for v in a]  # noqa: E731
-    plot_confusion(major(y_true), major(pred), list(MAJOR_CLASSES) + ["none"], fig_dir / "confusion_major.png",
-                   "Major categories (test, guarded)")
-    plot_confidence_coverage(cc, fig_dir / "confidence_coverage.png")
-    errors.to_csv(reports / "test_errors.csv", index=False)
 
     headline = pd.DataFrame(
         [
@@ -498,53 +412,12 @@ def main(argv: list[str] | None = None) -> dict:
             {"subset": "unseen titles", "accuracy [95% CI]": _fmt_ci(intervals["unseen_accuracy"])},
         ]
     )
-    lines = [
-        "# Error analysis tables",
-        "",
-        f"Model `{md.get('model_version')}`; test period starts {split_date} ({n} rows). "
-        "Generated by `python -m src.evaluate`; do not edit by hand.",
-        "",
-        "## Headline",
-        "",
-        df_to_markdown(headline),
-        "",
-        "## Per-class report (guarded)",
-        "",
-        df_to_markdown(per_class),
-        "",
-        "## Top confusions (guarded)",
-        "",
-        df_to_markdown(confusions),
-        "",
-        "## Seen vs unseen titles (guarded)",
-        "",
-        df_to_markdown(seen_tbl),
-        "",
-        "## Error buckets (guarded predictions)",
-        "",
-        df_to_markdown(summary),
-        "",
-        "`title_majority` errors are suspected label noise (the model agrees with the title's training majority), "
-        "not verified noise.",
-        "",
-    ]
-    for b in ERROR_BUCKETS:
-        sub = errors[errors["bucket"] == b]
-        if sub.empty:
-            continue
-        lines += [f"### {b}", "", df_to_markdown(sub.head(5)[["title", "true", "pred", "confidence"]]), ""]
-    lines += ["## Confidence vs coverage (guarded)", "", df_to_markdown(cc), ""]
-    c90 = cc[np.isclose(cc["threshold"], 0.90)]
-    c95 = cc[np.isclose(cc["threshold"], 0.95)]
-    if len(c90) and len(c95):
-        lines += [
-            "",
-            f"Moving the threshold from 0.90 to 0.95 collapses coverage from {c90.iloc[0]['coverage']:.2%} "
-            f"to {c95.iloc[0]['coverage']:.2%}.",
-        ]
-    lines.append("")
+    examples = {
+        b: errors[errors["bucket"] == b].head(5)[["title", "true", "pred", "confidence"]].to_dict("records")
+        for b in ERROR_BUCKETS
+    }
     if rec:
-        lines.append(
+        op_sentence = (
             f"Exploratory test operating point: threshold {rec['threshold']:.2f} covers "
             f"{rec['covered_n']}/{n} transactions ({rec['coverage']:.2%}); {rec['correct_n']} are correct "
             f"({rec['accuracy_on_covered']:.2%}, Wilson 95 % interval {rec['accuracy_low']:.2%} to "
@@ -553,8 +426,7 @@ def main(argv: list[str] | None = None) -> dict:
             "validation data, not on this test set."
         )
     else:
-        lines.append("No default threshold reaches 96% accuracy on the covered rows.")
-    (reports / "error_analysis_tables.md").write_text("\n".join(lines) + "\n")
+        op_sentence = "No default threshold reaches 96% accuracy on the covered rows."
 
     result = {
         "model_name": md.get("model_name"),
@@ -567,12 +439,26 @@ def main(argv: list[str] | None = None) -> dict:
         "intervals": intervals,
         "seen_unseen": su,
         "per_class": per_class.to_dict("records"),
+        "top_confusions": confusions.to_dict("records"),
         "bucket_summary": summary.to_dict("records"),
+        "errors": errors.to_dict("records"),
+        "examples_per_bucket": examples,
         "coverage": cc.to_dict("records"),
         "recommended_threshold": rec,
+        "operating_point": op_sentence,
     }
     dump_json(result, out / "evaluation.json")
+
+    print(f"Model {md.get('model_version')}; test period starts {split_date} ({n} rows)\n")
     print(headline.to_string(index=False))
+    print()
+    print(seen_tbl.to_string(index=False))
+    print()
+    print(summary.to_string(index=False))
+    print()
+    print(cc.to_string(index=False))
+    print()
+    print(op_sentence)
     return result
 
 

@@ -1,7 +1,7 @@
 {
   "model_name": "linear_svc",
-  "model_version": "linear_svc-20261018-151345",
-  "trained_at": "2026-10-18T15:13:45.620126+00:00",
+  "model_version": "linear_svc-20261018-154858",
+  "trained_at": "2026-10-18T15:48:58.971258+00:00",
   "task": "Predict minor_category of a card transaction; major_category is derived from a fixed taxonomy.",
   "classes": [
     "atm",

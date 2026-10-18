@@ -1,6 +1,6 @@
 {
   "model_name": "linear_svc",
-  "model_version": "linear_svc-20261018-151345",
+  "model_version": "linear_svc-20261018-154858",
   "data_md5": "2aae754ae1cbd30138ee647a7c5e9c7a",
   "split_date": "2026-05-24T11:07:07+00:00",
   "n_test": 1601,
@@ -142,6 +142,128 @@
       "support": 30
     }
   ],
+  "top_confusions": [
+    {
+      "text_norm": "apple com bill",
+      "true": "betting",
+      "pred": "multimedia",
+      "count": 4
+    },
+    {
+      "text_norm": "bene bono",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "count": 2
+    },
+    {
+      "text_norm": "create",
+      "true": "hairdresser",
+      "pred": "restaurants",
+      "count": 2
+    },
+    {
+      "text_norm": "intermarche",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "count": 2
+    },
+    {
+      "text_norm": "la banque postale",
+      "true": "transport_means",
+      "pred": "atm",
+      "count": 2
+    },
+    {
+      "text_norm": "la belle epoque",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "count": 2
+    },
+    {
+      "text_norm": "mc donald s",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "count": 2
+    },
+    {
+      "text_norm": "netflix com",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "count": 2
+    },
+    {
+      "text_norm": "adp roissy pab",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "count": 1
+    },
+    {
+      "text_norm": "amazon eu sarl",
+      "true": "multimedia",
+      "pred": "others_shopping",
+      "count": 1
+    },
+    {
+      "text_norm": "apple com bill",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "count": 1
+    },
+    {
+      "text_norm": "aprr nfc",
+      "true": "transport_means",
+      "pred": "tolls_gas_stations",
+      "count": 1
+    },
+    {
+      "text_norm": "auchan supermar",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "count": 1
+    },
+    {
+      "text_norm": "auchan supermar",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "count": 1
+    },
+    {
+      "text_norm": "betclic",
+      "true": "multimedia",
+      "pred": "betting",
+      "count": 1
+    },
+    {
+      "text_norm": "blablacar carpool",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "count": 1
+    },
+    {
+      "text_norm": "burger king",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "count": 1
+    },
+    {
+      "text_norm": "canal plus fr",
+      "true": "betting",
+      "pred": "multimedia",
+      "count": 1
+    },
+    {
+      "text_norm": "carrefour",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "count": 1
+    },
+    {
+      "text_norm": "carrefour city",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "count": 1
+    }
+  ],
   "bucket_summary": [
     {
       "bucket": "refund_rule",
@@ -169,6 +291,900 @@
       "share": 0.0
     }
   ],
+  "errors": [
+    {
+      "text_norm": "le diplomate",
+      "title": "LE DIPLOMATE",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "confidence": 0.9105222773547244,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "google phone dialer c",
+      "title": "GOOGLE *Phone Dialer C",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9037816036095919,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "l espace sante",
+      "title": "L'ESPACE SANTE",
+      "true": "pharmacies",
+      "pred": "restaurants",
+      "confidence": 0.8313293073219316,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "station bd de l",
+      "title": "STATION BD DE L",
+      "true": "supermarkets",
+      "pred": "tolls_gas_stations",
+      "confidence": 0.6735227301571493,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "cts da sc",
+      "title": "CTS DA SC",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.6364365394190906,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "easyjet dnata in flight c",
+      "title": "EASYJET DNATA IN FLIGHT C",
+      "true": "travel_means",
+      "pred": "restaurants",
+      "confidence": 0.5143759193945301,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "bene bono",
+      "title": "BENE BONO",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "confidence": 0.48652989347535,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "dept de la charente marit",
+      "title": "DEPT DE LA CHARENTE-MARIT",
+      "true": "tolls_gas_stations",
+      "pred": "restaurants",
+      "confidence": 0.47896996142512466,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "oasa athens",
+      "title": "OASA Athens",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.4741413451544807,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "bene bono",
+      "title": "BENE BONO",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "confidence": 0.46251211275155285,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "fp lourmel",
+      "title": "FP LOURMEL",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "confidence": 0.42974362586916426,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "adp roissy pab",
+      "title": "ADP ROISSY PAB",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.3890143948891243,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "napoleon games",
+      "title": "Napoleon Games",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.36529265563229235,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "mdx lab",
+      "title": "MDX Lab",
+      "true": "betting",
+      "pred": "restaurants",
+      "confidence": 0.3479690392434031,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "sq noir coffee shop",
+      "title": "SQ *NOIR COFFEE SHOP",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.33381042431275265,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "sdal",
+      "title": "SDAL",
+      "true": "supermarkets",
+      "pred": "tolls_gas_stations",
+      "confidence": 0.3173029085305233,
+      "bucket": "cold_start",
+      "train_rows_for_title": 0,
+      "train_majority_label": null,
+      "train_top_labels": ""
+    },
+    {
+      "text_norm": "pharmacie de la",
+      "title": "PHARMACIE DE LA",
+      "true": "supermarkets",
+      "pred": "pharmacies",
+      "confidence": 0.9450494948406479,
+      "bucket": "thin_support",
+      "train_rows_for_title": 3,
+      "train_majority_label": "pharmacies",
+      "train_top_labels": "pharmacies"
+    },
+    {
+      "text_norm": "microsoft subscription",
+      "title": "MICROSOFT*SUBSCRIPTION",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "confidence": 0.9073907239762252,
+      "bucket": "thin_support",
+      "train_rows_for_title": 3,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "deezerfr deezer",
+      "title": "DeezerFR DEEZER",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9045339336109418,
+      "bucket": "thin_support",
+      "train_rows_for_title": 3,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "gsf p wsprocessing",
+      "title": "GSF P-WSProcessing",
+      "true": "multimedia",
+      "pred": "betting",
+      "confidence": 0.9012839960304415,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "betting",
+      "train_top_labels": "betting"
+    },
+    {
+      "text_norm": "sodexo web",
+      "title": "SODEXO WEB",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "confidence": 0.8891222063246543,
+      "bucket": "thin_support",
+      "train_rows_for_title": 2,
+      "train_majority_label": "restaurants",
+      "train_top_labels": "restaurants"
+    },
+    {
+      "text_norm": "lw sncf connect",
+      "title": "LW*SNCF CONNECT",
+      "true": "transport_means",
+      "pred": "travel_means",
+      "confidence": 0.886668427181667,
+      "bucket": "thin_support",
+      "train_rows_for_title": 2,
+      "train_majority_label": "travel_means",
+      "train_top_labels": "travel_means"
+    },
+    {
+      "text_norm": "create",
+      "title": "CREATE",
+      "true": "hairdresser",
+      "pred": "restaurants",
+      "confidence": 0.6875764665517305,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "hairdresser",
+      "train_top_labels": "hairdresser"
+    },
+    {
+      "text_norm": "create",
+      "title": "CREATE",
+      "true": "hairdresser",
+      "pred": "restaurants",
+      "confidence": 0.6725758475947483,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "hairdresser",
+      "train_top_labels": "hairdresser"
+    },
+    {
+      "text_norm": "flix",
+      "title": "FLIX",
+      "true": "travel_means",
+      "pred": "transport_means",
+      "confidence": 0.6367171354051382,
+      "bucket": "thin_support",
+      "train_rows_for_title": 2,
+      "train_majority_label": "transport_means",
+      "train_top_labels": "transport_means"
+    },
+    {
+      "text_norm": "la belle epoque",
+      "title": "LA BELLE EPOQUE",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "confidence": 0.49131104950468657,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "transport_means",
+      "train_top_labels": "transport_means"
+    },
+    {
+      "text_norm": "la belle epoque",
+      "title": "LA BELLE EPOQUE",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "confidence": 0.4882243130568291,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "transport_means",
+      "train_top_labels": "transport_means"
+    },
+    {
+      "text_norm": "grand paris seine ouest",
+      "title": "GRAND PARIS SEINE OUEST",
+      "true": "transport_means",
+      "pred": "travel_means",
+      "confidence": 0.3228293936202671,
+      "bucket": "thin_support",
+      "train_rows_for_title": 1,
+      "train_majority_label": "travel_means",
+      "train_top_labels": "travel_means"
+    },
+    {
+      "text_norm": "ubr pending uber com",
+      "title": "UBR* PENDING.UBER.COM",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "confidence": 0.9580835424178406,
+      "bucket": "title_majority",
+      "train_rows_for_title": 111,
+      "train_majority_label": "transport_means",
+      "train_top_labels": "transport_means"
+    },
+    {
+      "text_norm": "mc donald s",
+      "title": "MC DONALD'S",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.9533925414162946,
+      "bucket": "title_majority",
+      "train_rows_for_title": 143,
+      "train_majority_label": "restaurants",
+      "train_top_labels": "restaurants"
+    },
+    {
+      "text_norm": "auchan supermar",
+      "title": "AUCHAN SUPERMAR",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "confidence": 0.9527875406099596,
+      "bucket": "title_majority",
+      "train_rows_for_title": 69,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "mc donald s",
+      "title": "MC DONALD S",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.9517828879171716,
+      "bucket": "title_majority",
+      "train_rows_for_title": 143,
+      "train_majority_label": "restaurants",
+      "train_top_labels": "restaurants"
+    },
+    {
+      "text_norm": "auchan supermar",
+      "title": "AUCHAN SUPERMAR",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9509169454625646,
+      "bucket": "title_majority",
+      "train_rows_for_title": 69,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "la banque postale",
+      "title": "LA BANQUE POSTALE",
+      "true": "transport_means",
+      "pred": "atm",
+      "confidence": 0.9479509284819226,
+      "bucket": "title_majority",
+      "train_rows_for_title": 91,
+      "train_majority_label": "atm",
+      "train_top_labels": "atm"
+    },
+    {
+      "text_norm": "carrefour",
+      "title": "CARREFOUR",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9472881445243106,
+      "bucket": "title_majority",
+      "train_rows_for_title": 77,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "la banque postale",
+      "title": "LA BANQUE POSTALE",
+      "true": "transport_means",
+      "pred": "atm",
+      "confidence": 0.9472144731339619,
+      "bucket": "title_majority",
+      "train_rows_for_title": 91,
+      "train_majority_label": "atm",
+      "train_top_labels": "atm"
+    },
+    {
+      "text_norm": "burger king",
+      "title": "Burger King",
+      "true": "supermarkets",
+      "pred": "restaurants",
+      "confidence": 0.9458056827130946,
+      "bucket": "title_majority",
+      "train_rows_for_title": 122,
+      "train_majority_label": "restaurants",
+      "train_top_labels": "restaurants"
+    },
+    {
+      "text_norm": "carrefour city",
+      "title": "CARREFOUR CITY",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "confidence": 0.9455773390533447,
+      "bucket": "title_majority",
+      "train_rows_for_title": 216,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "carrefour city",
+      "title": "CARREFOUR CITY",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9446268885073495,
+      "bucket": "title_majority",
+      "train_rows_for_title": 216,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "retrait dab",
+      "title": "RETRAIT DAB",
+      "true": "transport_means",
+      "pred": "atm",
+      "confidence": 0.9438118524841906,
+      "bucket": "title_majority",
+      "train_rows_for_title": 82,
+      "train_majority_label": "atm",
+      "train_top_labels": "atm"
+    },
+    {
+      "text_norm": "betclic",
+      "title": "BETCLIC",
+      "true": "multimedia",
+      "pred": "betting",
+      "confidence": 0.9426929925474239,
+      "bucket": "title_majority",
+      "train_rows_for_title": 92,
+      "train_majority_label": "betting",
+      "train_top_labels": "betting"
+    },
+    {
+      "text_norm": "google one",
+      "title": "Google One",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9413983012990114,
+      "bucket": "title_majority",
+      "train_rows_for_title": 29,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "winamax fr",
+      "title": "WINAMAX FR",
+      "true": "multimedia",
+      "pred": "betting",
+      "confidence": 0.9409896946228758,
+      "bucket": "title_majority",
+      "train_rows_for_title": 120,
+      "train_majority_label": "betting",
+      "train_top_labels": "betting"
+    },
+    {
+      "text_norm": "intermarche",
+      "title": "INTERMARCHE",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.939721849928998,
+      "bucket": "title_majority",
+      "train_rows_for_title": 266,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "apple com bill",
+      "title": "APPLE.COM/BILL",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9379360461309888,
+      "bucket": "title_majority",
+      "train_rows_for_title": 881,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "apple com bill",
+      "title": "APPLE.COM/BILL",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "confidence": 0.9361920165096905,
+      "bucket": "title_majority",
+      "train_rows_for_title": 881,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "fdj obgf",
+      "title": "FDJ OBGF",
+      "true": "multimedia",
+      "pred": "betting",
+      "confidence": 0.9361114744273223,
+      "bucket": "title_majority",
+      "train_rows_for_title": 49,
+      "train_majority_label": "betting",
+      "train_top_labels": "betting"
+    },
+    {
+      "text_norm": "apple com bill",
+      "title": "APPLE.COM/BILL",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9360463785431051,
+      "bucket": "title_majority",
+      "train_rows_for_title": 881,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "cash services",
+      "title": "CASH SERVICES",
+      "true": "transport_means",
+      "pred": "atm",
+      "confidence": 0.9357416186575485,
+      "bucket": "title_majority",
+      "train_rows_for_title": 66,
+      "train_majority_label": "atm",
+      "train_top_labels": "atm"
+    },
+    {
+      "text_norm": "amazon eu sarl",
+      "title": "AMAZON EU SARL",
+      "true": "multimedia",
+      "pred": "others_shopping",
+      "confidence": 0.9353972608459372,
+      "bucket": "title_majority",
+      "train_rows_for_title": 35,
+      "train_majority_label": "others_shopping",
+      "train_top_labels": "others_shopping"
+    },
+    {
+      "text_norm": "intermarche",
+      "title": "INTERMARCHE",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9353354970245865,
+      "bucket": "title_majority",
+      "train_rows_for_title": 266,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "carrefourmarket",
+      "title": "CARREFOURMARKET",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9350163692303983,
+      "bucket": "title_majority",
+      "train_rows_for_title": 72,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "franprix",
+      "title": "FRANPRIX",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9340232337546336,
+      "bucket": "title_majority",
+      "train_rows_for_title": 56,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "netflix com",
+      "title": "NETFLIX.COM",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "confidence": 0.9326583222933001,
+      "bucket": "title_majority",
+      "train_rows_for_title": 94,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "carrefourmarket",
+      "title": "CARREFOURMARKET",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "confidence": 0.9322238695219139,
+      "bucket": "title_majority",
+      "train_rows_for_title": 72,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "apple com bill",
+      "title": "APPLE.COM/BILL",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9318121667957763,
+      "bucket": "title_majority",
+      "train_rows_for_title": 881,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "centre leclerc",
+      "title": "CENTRE LECLERC",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.931758750528585,
+      "bucket": "title_majority",
+      "train_rows_for_title": 27,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "total",
+      "title": "TOTAL",
+      "true": "transport_means",
+      "pred": "tolls_gas_stations",
+      "confidence": 0.9316319866851783,
+      "bucket": "title_majority",
+      "train_rows_for_title": 101,
+      "train_majority_label": "tolls_gas_stations",
+      "train_top_labels": "tolls_gas_stations"
+    },
+    {
+      "text_norm": "monoprix",
+      "title": "MONOPRIX",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9312348807177105,
+      "bucket": "title_majority",
+      "train_rows_for_title": 184,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "netflix com",
+      "title": "NETFLIX.COM",
+      "true": "others_shopping",
+      "pred": "multimedia",
+      "confidence": 0.9310566128516249,
+      "bucket": "title_majority",
+      "train_rows_for_title": 94,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "cocci market",
+      "title": "COCCI MARKET",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.930976858319735,
+      "bucket": "title_majority",
+      "train_rows_for_title": 13,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "franprix",
+      "title": "FRANPRIX",
+      "true": "others_shopping",
+      "pred": "supermarkets",
+      "confidence": 0.9298535850484595,
+      "bucket": "title_majority",
+      "train_rows_for_title": 56,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "mcdonalds",
+      "title": "MCDONALDS",
+      "true": "transport_means",
+      "pred": "restaurants",
+      "confidence": 0.9294535785451479,
+      "bucket": "title_majority",
+      "train_rows_for_title": 31,
+      "train_majority_label": "restaurants",
+      "train_top_labels": "restaurants"
+    },
+    {
+      "text_norm": "apple com bill",
+      "title": "APPLE.COM/BILL",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9279519921502096,
+      "bucket": "title_majority",
+      "train_rows_for_title": 881,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "canal plus fr",
+      "title": "CANAL PLUS FR",
+      "true": "betting",
+      "pred": "multimedia",
+      "confidence": 0.9269766876060226,
+      "bucket": "title_majority",
+      "train_rows_for_title": 13,
+      "train_majority_label": "multimedia",
+      "train_top_labels": "multimedia"
+    },
+    {
+      "text_norm": "temu com",
+      "title": "TEMU.COM",
+      "true": "supermarkets",
+      "pred": "others_shopping",
+      "confidence": 0.9221309209248688,
+      "bucket": "title_majority",
+      "train_rows_for_title": 24,
+      "train_majority_label": "others_shopping",
+      "train_top_labels": "others_shopping"
+    },
+    {
+      "text_norm": "spar",
+      "title": "SPAR",
+      "true": "restaurants",
+      "pred": "supermarkets",
+      "confidence": 0.9147702356523716,
+      "bucket": "title_majority",
+      "train_rows_for_title": 15,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "sanef",
+      "title": "SANEF",
+      "true": "supermarkets",
+      "pred": "tolls_gas_stations",
+      "confidence": 0.914399659817092,
+      "bucket": "title_majority",
+      "train_rows_for_title": 10,
+      "train_majority_label": "tolls_gas_stations",
+      "train_top_labels": "tolls_gas_stations"
+    },
+    {
+      "text_norm": "blablacar carpool",
+      "title": "BlaBlaCar Carpool",
+      "true": "restaurants",
+      "pred": "transport_means",
+      "confidence": 0.9116960094391539,
+      "bucket": "title_majority",
+      "train_rows_for_title": 8,
+      "train_majority_label": "transport_means",
+      "train_top_labels": "transport_means"
+    },
+    {
+      "text_norm": "aprr nfc",
+      "title": "APRR NFC",
+      "true": "transport_means",
+      "pred": "tolls_gas_stations",
+      "confidence": 0.9046764820509784,
+      "bucket": "title_majority",
+      "train_rows_for_title": 11,
+      "train_majority_label": "tolls_gas_stations",
+      "train_top_labels": "tolls_gas_stations"
+    },
+    {
+      "text_norm": "sa coop atlantique",
+      "title": "SA   COOP ATLANTIQUE 3",
+      "true": "tolls_gas_stations",
+      "pred": "supermarkets",
+      "confidence": 0.8828500833613669,
+      "bucket": "title_majority",
+      "train_rows_for_title": 8,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    },
+    {
+      "text_norm": "g",
+      "title": "G7",
+      "true": "transport_means",
+      "pred": "supermarkets",
+      "confidence": 0.7171090893008815,
+      "bucket": "title_majority",
+      "train_rows_for_title": 5,
+      "train_majority_label": "supermarkets",
+      "train_top_labels": "supermarkets"
+    }
+  ],
+  "examples_per_bucket": {
+    "refund_rule": [],
+    "cold_start": [
+      {
+        "title": "LE DIPLOMATE",
+        "true": "supermarkets",
+        "pred": "restaurants",
+        "confidence": 0.9105222773547244
+      },
+      {
+        "title": "GOOGLE *Phone Dialer C",
+        "true": "betting",
+        "pred": "multimedia",
+        "confidence": 0.9037816036095919
+      },
+      {
+        "title": "L'ESPACE SANTE",
+        "true": "pharmacies",
+        "pred": "restaurants",
+        "confidence": 0.8313293073219316
+      },
+      {
+        "title": "STATION BD DE L",
+        "true": "supermarkets",
+        "pred": "tolls_gas_stations",
+        "confidence": 0.6735227301571493
+      },
+      {
+        "title": "CTS DA SC",
+        "true": "transport_means",
+        "pred": "restaurants",
+        "confidence": 0.6364365394190906
+      }
+    ],
+    "thin_support": [
+      {
+        "title": "PHARMACIE DE LA",
+        "true": "supermarkets",
+        "pred": "pharmacies",
+        "confidence": 0.9450494948406479
+      },
+      {
+        "title": "MICROSOFT*SUBSCRIPTION",
+        "true": "others_shopping",
+        "pred": "multimedia",
+        "confidence": 0.9073907239762252
+      },
+      {
+        "title": "DeezerFR DEEZER",
+        "true": "betting",
+        "pred": "multimedia",
+        "confidence": 0.9045339336109418
+      },
+      {
+        "title": "GSF P-WSProcessing",
+        "true": "multimedia",
+        "pred": "betting",
+        "confidence": 0.9012839960304415
+      },
+      {
+        "title": "SODEXO WEB",
+        "true": "supermarkets",
+        "pred": "restaurants",
+        "confidence": 0.8891222063246543
+      }
+    ],
+    "title_majority": [
+      {
+        "title": "UBR* PENDING.UBER.COM",
+        "true": "restaurants",
+        "pred": "transport_means",
+        "confidence": 0.9580835424178406
+      },
+      {
+        "title": "MC DONALD'S",
+        "true": "transport_means",
+        "pred": "restaurants",
+        "confidence": 0.9533925414162946
+      },
+      {
+        "title": "AUCHAN SUPERMAR",
+        "true": "others_shopping",
+        "pred": "supermarkets",
+        "confidence": 0.9527875406099596
+      },
+      {
+        "title": "MC DONALD S",
+        "true": "transport_means",
+        "pred": "restaurants",
+        "confidence": 0.9517828879171716
+      },
+      {
+        "title": "AUCHAN SUPERMAR",
+        "true": "restaurants",
+        "pred": "supermarkets",
+        "confidence": 0.9509169454625646
+      }
+    ],
+    "other": []
+  },
   "coverage": [
     {
       "threshold": 0.5,
@@ -250,5 +1266,6 @@
     "abstain_n": 21,
     "accuracy_low": 0.9521312967702142,
     "accuracy_high": 0.970940808420103
-  }
+  },
+  "operating_point": "Exploratory test operating point: threshold 0.50 covers 1580/1601 transactions (98.69%); 1521 are correct (96.27%, Wilson 95 % interval 95.21% to 97.09%); 21 abstain. It is the smallest threshold of the default grid that reaches 96% accuracy; a deployment threshold should be chosen and frozen on validation data, not on this test set."
 }

@@ -165,3 +165,16 @@ def test_shipped_artifact():
     assert out["minor_category"] == "multimedia"
     out = p.predict_one({**REC, "status": "refunded"})
     assert out["minor_category"] == "refund" and out["major_category"] is None
+
+
+def test_predict_import_does_not_load_matplotlib():
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    out = subprocess.run(
+        [sys.executable, "-c", "import sys, src.predict; print('matplotlib' in sys.modules)"],
+        cwd=root, capture_output=True, text=True, check=True,
+    )
+    assert out.stdout.strip() == "False"

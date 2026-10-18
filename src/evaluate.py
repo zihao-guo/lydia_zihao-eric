@@ -13,10 +13,6 @@ from datetime import datetime
 from pathlib import Path
 
 import joblib
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
@@ -276,8 +272,19 @@ def bucket_summary(errors_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def _pyplot():
+    """Import pyplot lazily (headless backend) so inference never loads plotting code."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    return plt
+
+
 def plot_confusion(y_true, y_pred, labels, path, title) -> None:
     """Row-normalised confusion matrix with annotated cells, saved as PNG."""
+    plt = _pyplot()
     labels = list(labels)
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     norm = cm / np.maximum(cm.sum(axis=1, keepdims=True), 1)
@@ -302,6 +309,7 @@ def plot_confusion(y_true, y_pred, labels, path, title) -> None:
 
 
 def plot_confidence_coverage(cc: pd.DataFrame, path) -> None:
+    plt = _pyplot()
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.plot(cc["coverage"], cc["accuracy_on_covered"], marker="o")
     offsets = [(6, -12), (6, 8)]

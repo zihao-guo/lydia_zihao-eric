@@ -4,6 +4,11 @@ import joblib
 import pytest
 
 
+def pytest_configure(config):
+    """Treat every warning as an error: the suite must stay silent under the pinned versions."""
+    config.addinivalue_line("filterwarnings", "error")
+
+
 @pytest.fixture(scope="session")
 def tiny_bundle_path(tmp_path_factory):
     """Small merchant_lookup bundle ({"pipeline", "metadata"}) for predictor tests.
